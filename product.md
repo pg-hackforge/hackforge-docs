@@ -20,7 +20,7 @@ Discover → Analyze → Exploit → (공격 검증) → Defend → Patch → Re
 | 역할 | v1에서 하는 일 |
 |---|---|
 | 학습자 | 문제를 골라 공격 → 방어 → 검증을 수행한다 |
-| 문제 출제자 | 저장소에 Challenge를 직접 추가한다. 플랫폼에 출제자 화면은 없다 |
+| 문제 출제자 | 템플릿으로 Challenge 저장소를 직접 만든다([ADR 007](decisions/007-challenge-저장소.md)). 플랫폼에 출제자 화면은 없다 |
 | 관리자 | 가입 승인, 진행 중인 세션 보기, 세션 강제 종료, 검증 결과·기록 조회 |
 
 - 동시 학습자: v1 목표 **5명 안팎**. 30명(수업 한 반)으로 늘리는 방법은 설계 문서로만 남긴다.
@@ -81,7 +81,7 @@ Discover → Analyze → Exploit → (공격 검증) → Defend → Patch → Re
 
 | # | 사용자가 ○○하면 | △△된다 |
 |---|---|---|
-| 13 | 저장소에 Challenge를 추가하고 이미지를 빌드하면 | 학습자의 문제 목록에 나타난다 |
+| 13 | Challenge 저장소를 만들고 이미지를 빌드하면 | 학습자의 문제 목록에 나타난다 |
 
 Challenge 하나에 들어가는 것: Compose 프로젝트, 공격 검증 규칙, 정상 기능 테스트, 힌트 3개, 해답, 방어 검증 최대 시도 횟수
 
@@ -110,7 +110,7 @@ Challenge 하나에 들어가는 것: Compose 프로젝트, 공격 검증 규칙
 | DB | H2 (개발용) | 운영 DB 미정 |
 | Kubernetes 연동 | client-java 27.0.1 | [ADR 001](decisions/001-kubernetes-client-버전.md) |
 | 클러스터 | Ubuntu 24.04, kubeadm Kubernetes 1.35, Sysbox, Calico. 개발 VM(최소 사양)과 운영 서버가 같은 구성 (구성 예정) | [ADR 005](decisions/005-실습-환경-실행-기반.md), [ADR 006](decisions/006-개발-VM과-운영-서버.md) |
-| 인증 | 서버 세션 + 쿠키 (제안), 외부 로그인 GitHub·Google | [ADR 002](decisions/002-인증-방식.md) |
+| 인증 | 서버 세션 + 쿠키, Spring Session JDBC, 외부 로그인 GitHub·Google | [ADR 002](decisions/002-인증-방식.md) |
 | 프론트엔드 | 미정 | `hackforge-fe` |
 
 실습 환경은 Sysbox Pod 안의 Docker Compose로 띄운다([ADR 005](decisions/005-실습-환경-실행-기반.md)). code-server, xterm.js 등 나머지 구성은 기획서 초안의 제안이다. 하나씩 ADR로 확정한다.
@@ -122,6 +122,7 @@ Challenge 하나에 들어가는 것: Compose 프로젝트, 공격 검증 규칙
 - `hackforge-docs`가 무엇을, 왜 만드는지 정한다.
 - `hackforge-be`가 `openapi.yaml`로 API 계약을 관리한다.
 - `hackforge-fe`는 그 계약으로 클라이언트를 생성한다.
+- Challenge는 문제마다 비공개 저장소 `hackforge-challenge-<문제>`에 둔다([ADR 007](decisions/007-challenge-저장소.md)).
 - API 변경 순서: 명세 PR 합의 → 백엔드 구현·배포 → 프론트 반영.
 
 ## 데이터 모델 (개념)
