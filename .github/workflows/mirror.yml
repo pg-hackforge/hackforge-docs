@@ -1,0 +1,20 @@
+# main과 태그를 suhodang 조직의 같은 이름 저장소로 덮어쓴다(읽기 전용 사본).
+name: mirror
+on:
+  push:
+    branches: [main]
+    tags: ['*']
+concurrency: mirror
+jobs:
+  mirror:
+    if: github.repository_owner == 'pg-hackforge'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false   # 기본 토큰이 붙으면 suhodang으로 push가 거부된다
+      - env:
+          TOKEN: ${{ secrets.MIRROR_TOKEN }}
+          REPO: ${{ github.event.repository.name }}
+        run: git push --force "https://x-access-token:${TOKEN}@github.com/suhodang/${REPO}.git" refs/remotes/origin/main:refs/heads/main --tags

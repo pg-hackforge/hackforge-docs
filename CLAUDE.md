@@ -59,3 +59,4 @@ Hackforge(웹 보안 공격·방어 실습 플랫폼)의 기획·결정·기능 
 - 커밋 접두어: `feat:` `fix:` `docs:` `chore:`
 - 커밋 본문은 diff로 알 수 없는 이유만 한두 줄 쓴다. 뻔한 변경은 제목 한 줄로 끝낸다.
 - 라벨: `feature` `bug` `be` `fe` `infra`
+- `suhodang/<이 저장소 이름>`은 `main`과 태그를 자동으로 덮어쓰는 읽기 전용 사본이다(`.github/workflows/mirror.yml`). 거기서 작업하지 않는다.
