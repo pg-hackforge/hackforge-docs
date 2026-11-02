@@ -109,11 +109,11 @@ Challenge 하나에 들어가는 것: Compose 프로젝트, 공격 검증 규칙
 | 백엔드 | Java 25, Spring Boot 4.1.1, Gradle 9.8.1 | `hackforge-be/build.gradle` |
 | DB | H2 (개발용) | 운영 DB 미정 |
 | Kubernetes 연동 | client-java 27.0.1 | [ADR 001](decisions/001-kubernetes-client-버전.md) |
-| 클러스터 | Minikube, Kubernetes v1.37 (VM, SSH 터널로 접속) | 개발 환경 |
+| 클러스터 | Ubuntu 24.04 VM, kubeadm Kubernetes 1.35, Sysbox (구성 예정) | [ADR 005](decisions/005-실습-환경-실행-기반.md) |
 | 인증 | 서버 세션 + 쿠키 (제안), 외부 로그인 GitHub·Google | [ADR 002](decisions/002-인증-방식.md) |
 | 프론트엔드 | 미정 | `hackforge-fe` |
 
-실습 환경 구성(Sysbox + 내부 Docker Compose, code-server, xterm.js 등)은 기획서 초안의 제안이다. 하나씩 ADR로 확정한다.
+실습 환경은 Sysbox Pod 안의 Docker Compose로 띄운다([ADR 005](decisions/005-실습-환경-실행-기반.md)). code-server, xterm.js 등 나머지 구성은 기획서 초안의 제안이다. 하나씩 ADR로 확정한다.
 
 ## 저장소 간 관계
 
