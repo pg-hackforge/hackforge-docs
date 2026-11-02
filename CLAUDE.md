@@ -56,4 +56,5 @@ Hackforge(웹 보안 공격·방어 실습 플랫폼)의 기획·결정·기능 
 
 - GitHub Flow를 쓴다. `main`에서 짧은 브랜치(`docs/...`)를 따고 PR로 머지한다. `main`에 직접 push하지 않는다.
 - 커밋 접두어: `feat:` `fix:` `docs:` `chore:`
+- 커밋 본문은 diff로 알 수 없는 이유만 한두 줄 쓴다. 뻔한 변경은 제목 한 줄로 끝낸다.
 - 라벨: `feature` `bug` `be` `fe`
