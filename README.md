@@ -7,6 +7,7 @@ Hackforge의 기획·결정·기능 스펙을 둔다. 코드는 [hackforge-be](.
 | [product.md](product.md) | 목표, 사용자, 핵심 기능, 안 할 것, 유스케이스, 스택, 데이터 모델 |
 | [decisions/](decisions) | 결정 기록(ADR). 결정 하나당 파일 하나, 추가만 함 |
 | `specs/<기능>/tasks.md` | 큰 기능의 작업 목록. 기능을 시작할 때 만듦 |
+| [infra/](infra) | 클러스터·서버 구성 절차. [cluster-setup.md](infra/cluster-setup.md): 노드 하나에 kubeadm·Calico·Sysbox 설치 |
 
 ## 기능 하나를 만드는 순서
 
