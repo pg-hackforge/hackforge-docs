@@ -109,7 +109,7 @@ Challenge 하나에 들어가는 것: Compose 프로젝트, 공격 검증 규칙
 | 백엔드 | Java 25, Spring Boot 4.1.1, Gradle 9.8.1 | `hackforge-be/build.gradle` |
 | DB | H2 (개발용) | 운영 DB 미정 |
 | Kubernetes 연동 | client-java 27.0.1 | [ADR 001](decisions/001-kubernetes-client-버전.md) |
-| 클러스터 | Ubuntu 24.04, kubeadm Kubernetes 1.35, Sysbox, Calico. 개발 VM(최소 사양)과 운영 서버가 같은 구성 (구성 예정) | [ADR 005](decisions/005-실습-환경-실행-기반.md), [ADR 006](decisions/006-개발-VM과-운영-서버.md) |
+| 클러스터 | Ubuntu 24.04, kubeadm Kubernetes 1.35, containerd 2.2, Sysbox 0.7.1, Calico 3.33. 개발 VM(Hyper-V, 최소 사양)은 구성 완료(2026-11-03), 운영 서버는 같은 구성으로 구성 예정 | [ADR 005](decisions/005-실습-환경-실행-기반.md), [ADR 006](decisions/006-개발-VM과-운영-서버.md), [ADR 008](decisions/008-개발-VM-실행-환경.md), [ADR 009](decisions/009-sysbox-containerd-설정.md) |
 | 인증 | 서버 세션 + 쿠키, Spring Session JDBC, 외부 로그인 GitHub·Google | [ADR 002](decisions/002-인증-방식.md) |
 | 프론트엔드 | 미정 | `hackforge-fe` |
 
