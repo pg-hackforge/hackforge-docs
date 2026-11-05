@@ -35,7 +35,7 @@ v1 범위는 자가 가입만이다. 이메일 인증·비밀번호 재설정(v1
 ## 작업
 
 - [x] 1. [be] `openapi.yaml`에 계정 API 추가: `POST /api/auth/signup`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/me`, `PUT /api/me/password`, `GET /api/admin/users?status=`, `POST /api/admin/users/{id}/approve`, `POST /api/admin/users/{id}/reject`, `PUT /api/admin/users/{id}/role`, `POST /api/admin/users/{id}/temporary-password`, 에러 응답 형식 (테스트: OpenAPI lint, hackforge-be#7)
-- [ ] 2. [be] PostgreSQL·Flyway·Testcontainers 세팅. H2 제거, `compose.yaml`(PostgreSQL), Spring Session JDBC 테이블을 Flyway로 생성, 세션 30분 (테스트: 앱 context가 Testcontainers PostgreSQL로 뜨고 migration 적용됨, CI 통과)
+- [x] 2. [be] PostgreSQL·Flyway·Testcontainers 세팅. H2 제거, `compose.yaml`(PostgreSQL), Spring Session JDBC 테이블을 Flyway로 생성, 세션 30분 (테스트: 앱 context가 Testcontainers PostgreSQL로 뜨고 migration 적용됨, CI 통과, hackforge-be#10)
 - [ ] 3. [be] `users` 테이블, 가입·로그인·로그아웃·`GET /api/me`. 입력 검증, bcrypt, CSRF(SPA용 cookie 방식), 세션 cookie 속성, 세션에는 id·역할만 (테스트: 가입 시 `PENDING`·`LEARNER`, 중복 이메일·닉네임 거절, 규칙 위반 거절, 로그인 실패 문구 동일, 로그아웃 후 401, CSRF 없으면 403, cookie 속성)
 - [ ] 4. [be] 계정 잠금(로그인 실패) (테스트: 5번째 실패에 잠김, 잠긴 동안 맞는 비밀번호도 거절, 15분 뒤 해제, 성공하면 횟수 초기화, 로그인 실패로 잠겨도 기존 세션 유지)
 - [ ] 5. [be] 관리자 API: 계정 목록(상태 필터, 기본 `PENDING`), 승인, 거절 (테스트: 관리자만 호출 가능, 허용된 상태 전이만 됨, `APPROVED` 거절 불가)
