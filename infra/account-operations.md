@@ -7,12 +7,20 @@
 
 ## placeholder
 
-| 이름 | 뜻 | 개발 환경 값 |
-|---|---|---|
-| `<PSQL>` | 플랫폼 DB에 psql로 접속하는 명령 | hackforge-be 폴더에서 `docker compose exec postgres psql -U hackforge` |
-| `<BASE_URL>` | 백엔드 주소 | `http://127.0.0.1:8080` |
+| 이름 | 뜻 | 개발 환경 값 | 운영 값 |
+|---|---|---|---|
+| `<PSQL>` | 플랫폼 DB에 psql로 접속하는 명령 | hackforge-be 폴더에서 `docker compose exec postgres psql -U hackforge` | 관리 PC에서 `kubectl exec -it -n <NAMESPACE> <DB_WORKLOAD> -- psql -U hackforge` |
+| `<BASE_URL>` | 백엔드 주소 | `http://127.0.0.1:8080` | 운영 구성 때 정함 |
 
-- 미정(결정 필요): 운영 DB의 위치와 접속 방법. 백엔드를 클러스터에 올릴 때 정하고([ADR 010](../decisions/010-db-postgresql-flyway.md) "결과") 위 표에 운영 값을 채운다.
+## 운영 DB 접속
+
+운영 DB는 클러스터 안에 있다([ADR 010](../decisions/010-db-postgresql-flyway.md)). DB 포트는 클러스터 밖에 열지 않는다. 같은 클러스터에서 학습자가 셸을 가진 실습 Pod가 돌기 때문에 DB로 들어가는 길을 kubectl 하나로 좁힌다.
+
+- 데이터를 바꾸는 작업(이 문서의 절차)은 `kubectl exec`로 DB Pod 안의 psql에서 함. kubeconfig를 가진 관리자만 할 수 있고 DB 비밀번호가 필요 없음
+- 조회만 할 때는 관리 PC에서 `kubectl port-forward -n <NAMESPACE> svc/<DB_SERVICE> 15432:5432`를 켜 두고 GUI 도구로 `127.0.0.1:15432`에 접속함. GUI에서는 읽기 전용 DB 계정만 씀
+- GUI에서 데이터를 고치지 않음. GUI는 auto-commit이 기본이고 표에서 셀을 바로 고칠 수 있어서, 실수가 확인 없이 반영됨
+
+- 미정(결정 필요): `<NAMESPACE>`, `<DB_WORKLOAD>`, `<DB_SERVICE>` 이름과 읽기 전용 DB 계정. 백엔드와 DB를 클러스터에 올릴 때 storage, 백업과 함께 정한다(ADR 010 "결과").
 
 ## psql에서 지킬 것
 
