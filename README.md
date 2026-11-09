@@ -7,7 +7,7 @@ Hackforge의 기획, 결정, 기능 spec을 두는 저장소다. 코드는 [hack
 | [product.md](product.md) | 목표, 사용자, 핵심 기능, 안 할 것, 유스케이스, 스택, 데이터 모델 |
 | [decisions/](decisions) | ADR. 결정 하나당 파일 하나, 추가만 함 |
 | `specs/<기능>/tasks.md` | 큰 기능의 작업 목록. 기능 시작할 때 생성 |
-| [infra/](infra) | 클러스터·서버 구성 runbook. [cluster-setup.md](infra/cluster-setup.md): single node에 kubeadm, Calico, Sysbox 설치 |
+| [infra/](infra) | 클러스터·서버 구성과 운영 runbook. [cluster-setup.md](infra/cluster-setup.md): single node에 kubeadm, Calico, Sysbox 설치. [account-operations.md](infra/account-operations.md): 첫 관리자 만들기, 탈퇴 요청 처리 |
 
 ## 기능 하나를 만드는 순서
 
