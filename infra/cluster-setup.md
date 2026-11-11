@@ -2,7 +2,7 @@
 
 Ubuntu Server 24.04 single node에 kubeadm 1.35, containerd 2.x, Calico, Sysbox를 설치하고 Sysbox Pod 안에서 Docker Compose가 도는지까지 확인하는 절차다. 방화벽 섹션을 빼면 모두 개발 VM(#5)에서 실제로 실행한 명령이고, 운영 서버도 이 순서로 구성한다.
 
-- 결정: [ADR 005](../decisions/005-실습-환경-실행-기반.md), [ADR 006](../decisions/006-개발-VM과-운영-서버.md), [ADR 008](../decisions/008-개발-VM-실행-환경.md), [ADR 009](../decisions/009-sysbox-containerd-설정.md)
+- 결정: [ADR 005](../decisions/005-실습-환경-실행-기반.md), [ADR 006](../decisions/006-개발-VM과-운영-서버.md), [ADR 008](../decisions/008-개발-VM-실행-환경.md), [ADR 009](../decisions/009-sysbox-containerd-설정.md), [ADR 013](../decisions/013-실습-pod-격리와-백엔드-권한.md)(8단계)
 - 기준 버전 (2026-11-03): Ubuntu 24.04.5, 커널 6.8.0-147-generic, containerd 2.2.1, Kubernetes 1.35.10, Calico 3.33.0, Sysbox 0.7.1
 - 구성이 바뀌면 같은 PR에서 이 문서도 고친다.
 
@@ -15,6 +15,7 @@ Ubuntu Server 24.04 single node에 kubeadm 1.35, containerd 2.x, Calico, Sysbox�
 | `<NODE_IP>` | API server와 kubelet이 쓸 노드 주소. 관리 PC에서 접근 가능해야 함 | internal switch 주소 |
 | `<POD_CIDR>` | Pod 대역. 노드·사무실 내부망과 겹치면 안 됨 | `10.244.0.0/16` |
 | `<NODE_NAME>` | `kubectl get nodes`에 보이는 이름(호스트 이름) | `ubuntu` |
+| `<POD_PIDS_LIMIT>` | Pod 하나의 프로세스·스레드 수 상한(8단계). 미정(실측 후 결정): 테스트 문제 실측(#6 작업 5) 후 확정 | `4096` |
 
 ## 0. 전제 조건
 
@@ -296,6 +297,132 @@ kubectl --kubeconfig ~/.kube/<클러스터이름>.yaml get nodes
 - kubectl은 서버와 minor 버전 ±1까지 지원(1.35 서버면 1.34~1.36)
 - 관리 PC에서 `<NODE_IP>:6443` 접근 가능해야 함
 - 설치 중에 쓴 임시 `sudo` NOPASSWD 설정이 있으면 삭제
+
+## 8. 실습 환경 정책 (#6)
+
+실습 Pod 격리와 백엔드 권한([ADR 013](../decisions/013-실습-pod-격리와-백엔드-권한.md))을 클러스터에 적용한다. 실습 Pod마다 만드는 namespace, NetworkPolicy, ResourceQuota, Pod는 백엔드가 만들고, 여기서는 클러스터에 한 번만 적용하는 것을 다룬다.
+
+### 8.1 kubelet `podPidsLimit`
+
+Pod 하나가 만들 수 있는 프로세스·스레드 수 상한이다. 노드의 모든 Pod에 걸리므로 백엔드(JVM 스레드), DB, Calico가 충분히 들어가는 값이어야 한다. 개발 VM에서 가장 많이 쓰는 Pod(calico-node)가 60개였다.
+
+새로 구성하는 클러스터는 3단계 `~/kubeadm-config.yaml` 끝에 아래를 붙여 `kubeadm init` 때 넣는다. 미확인: 개발 VM은 이미 구성된 뒤라 이 방식은 운영 서버 구성 때 확인한다.
+
+```yaml
+---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+podPidsLimit: <POD_PIDS_LIMIT>
+```
+
+이미 구성된 클러스터는 kubelet 설정 파일과 kubeadm이 보관하는 ConfigMap을 함께 고친다. ConfigMap을 고치지 않으면 `kubeadm upgrade` 때 설정 파일이 ConfigMap 내용으로 덮어써진다.
+
+```bash
+grep -c podPidsLimit /var/lib/kubelet/config.yaml          # 0이어야 함
+sudo cp /var/lib/kubelet/config.yaml /var/lib/kubelet/config.yaml.before-pidslimit
+echo 'podPidsLimit: <POD_PIDS_LIMIT>' | sudo tee -a /var/lib/kubelet/config.yaml
+sudo systemctl restart kubelet
+kubectl -n kube-system edit configmap kubelet-config       # data.kubelet 끝에 podPidsLimit: <POD_PIDS_LIMIT> 추가
+```
+
+확인:
+
+```bash
+kubectl -n kube-system get configmap kubelet-config -o yaml | grep podPidsLimit    # podPidsLimit: <POD_PIDS_LIMIT>
+kubectl run pidcheck -n default --image=busybox:1.37 --restart=Never --command -- sleep 300
+kubectl wait --for=condition=Ready pod/pidcheck -n default --timeout=120s
+POD_UID=$(kubectl get pod pidcheck -n default -o jsonpath='{.metadata.uid}' | tr '-' '_')
+# 노드에서
+cat $(find /sys/fs/cgroup/kubepods.slice -maxdepth 2 -type d -name "*pod${POD_UID}.slice")/pids.max    # <POD_PIDS_LIMIT>
+kubectl delete pod pidcheck -n default
+```
+
+이미 떠 있는 Pod에는 적용되지 않고, 새로 만들어지는 Pod부터 적용된다. kubelet의 `/configz`로 설정을 보는 방법은 개발 VM에서 `NotFound`가 나서 쓰지 않는다.
+
+### 8.2 백엔드 권한과 실습 네트워크 차단
+
+`infra/k8s/`의 manifest 3개를 적용한다. hackforge-docs 저장소를 받은 관리 PC에서 실행한다.
+
+| 파일 | 내용 |
+|---|---|
+| `hackforge-backend.yaml` | namespace `hackforge`, service account `hackforge-backend`, ClusterRole과 ClusterRoleBinding |
+| `hackforge-backend-policy.yaml` | ValidatingAdmissionPolicy. `hackforge-backend`는 `lab-` namespace만 생성·변경·삭제 가능, 실습 namespace 생성 시 label `hackforge/lab=true` 필수 |
+| `lab-network-policy.yaml` | Calico GlobalNetworkPolicy. label `hackforge/lab=true`인 namespace의 Pod는 Ingress, Egress 모두 거절 |
+
+```bash
+kubectl apply -f infra/k8s/
+kubectl get sa -n hackforge hackforge-backend
+kubectl get validatingadmissionpolicy,validatingadmissionpolicybinding
+kubectl get globalnetworkpolicies.projectcalico.org
+```
+
+GlobalNetworkPolicy는 Calico API server(`projectcalico.org/v3`)로 적용한다. 4단계의 operator 설치에 API server가 포함돼 있다.
+
+### 8.3 백엔드용 kubeconfig
+
+백엔드가 클러스터 밖에서 돌 때(개발 PC의 `bootRun`) 쓰는 kubeconfig다. 관리자 kubeconfig가 아니라 `hackforge-backend` token으로 만들어서 운영과 같은 권한으로 동작하게 한다. 운영에서 백엔드가 클러스터 안의 Pod로 돌면 자동으로 들어가는 token을 쓰므로 이 파일이 필요 없다.
+
+token은 출력하지 않고 파일에만 쓴다. 만료 기간은 30일(`720h`)이고, 만료되면 같은 명령을 다시 실행한다.
+
+```bash
+# 관리 PC에서. 관리자 kubeconfig는 ~/.kube/<클러스터이름>.yaml
+ADMIN=~/.kube/<클러스터이름>.yaml; OUT=~/.kube/<클러스터이름>-backend.yaml; CA=$(mktemp)
+kubectl --kubeconfig $ADMIN config view --raw --minify -o jsonpath='{.clusters[0].cluster.certificate-authority-data}' | base64 -d > $CA
+SERVER=$(kubectl --kubeconfig $ADMIN config view --minify -o jsonpath='{.clusters[0].cluster.server}')
+TOKEN=$(kubectl --kubeconfig $ADMIN create token hackforge-backend -n hackforge --duration=720h)
+kubectl --kubeconfig $OUT config set-cluster <클러스터이름> --server=$SERVER --certificate-authority=$CA --embed-certs=true
+kubectl --kubeconfig $OUT config set-credentials hackforge-backend --token=$TOKEN
+kubectl --kubeconfig $OUT config set-context hackforge-backend --cluster=<클러스터이름> --user=hackforge-backend
+kubectl --kubeconfig $OUT config use-context hackforge-backend
+unset TOKEN; rm -f $CA; chmod 600 $OUT
+kubectl --kubeconfig $OUT auth whoami -o jsonpath='{.status.userInfo.username}'    # system:serviceaccount:hackforge:hackforge-backend
+```
+
+백엔드 설정 `hackforge.lab.kubeconfig`에는 이 파일의 경로만 적는다.
+
+### 8.4 확인
+
+`B`는 8.3의 백엔드 kubeconfig다. 위험한 요청은 `--dry-run=server`로 보낸다. dry-run도 admission 검사를 거치므로 거절 여부를 확인할 수 있고, 통과해도 반영되지 않는다.
+
+```bash
+B="kubectl --kubeconfig ~/.kube/<클러스터이름>-backend.yaml"
+cat <<'EOF' | $B create -f -                                     # 허용
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lab-check
+  labels: {hackforge/lab: "true", pod-security.kubernetes.io/enforce: baseline}
+EOF
+$B create namespace lab-nolabel --dry-run=server                  # 거절: label hackforge/lab=true 필요
+$B create namespace foo --dry-run=server                          # 거절: lab- namespace만
+$B run x -n kube-system --image=busybox:1.37 --dry-run=server     # 거절: lab- namespace만
+$B delete pod -n kube-system -l k8s-app=kube-dns --dry-run=server # 거절: lab- namespace만
+$B delete namespace hackforge --dry-run=server                    # 거절: lab- namespace만
+$B get secrets -n kube-system                                     # 거절: RBAC에 secrets 없음
+cat <<'EOF' | $B create -f - --dry-run=server                     # 거절: PodSecurity baseline
+apiVersion: v1
+kind: Pod
+metadata: {name: priv, namespace: lab-check}
+spec:
+  containers: [{name: c, image: busybox:1.37, securityContext: {privileged: true}}]
+EOF
+```
+
+GlobalNetworkPolicy는 NetworkPolicy가 없는 실습 namespace에서 확인한다. 대조군으로 `default` namespace에도 같은 Pod를 띄운다. exec는 관리자 kubeconfig로 한다(백엔드 권한에는 `pods/exec`가 없음).
+
+```bash
+$B run probe -n lab-check --image=busybox:1.37 --restart=Never --command -- sleep 600
+kubectl run probe -n default --image=busybox:1.37 --restart=Never --command -- sleep 600
+for ns in default lab-check; do kubectl wait --for=condition=Ready pod/probe -n $ns --timeout=120s; done
+for ns in default lab-check; do for t in 1.1.1.1:80 10.96.0.1:443 <NODE_IP>:6443 <NODE_IP>:10250; do
+  echo "$ns $t $(kubectl exec -n $ns probe -- sh -c "nc -z -w 3 ${t%:*} ${t#*:} && echo open || echo blocked" 2>&1 | tail -1)"
+done; done
+# default는 모두 open, lab-check는 모두 blocked
+kubectl delete pod probe -n default
+$B delete namespace lab-check
+```
+
+`$B delete namespace`는 삭제 완료를 기다리면서 `cannot watch resource "namespaces"` 오류를 출력하는데, 백엔드 권한에 watch가 없어서 나는 것이고 삭제는 정상적으로 된다.
 
 ## 방화벽
 

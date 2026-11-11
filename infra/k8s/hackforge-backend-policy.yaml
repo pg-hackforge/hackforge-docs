@@ -1,0 +1,44 @@
+# 백엔드 service account는 lab- namespace만 생성·변경·삭제할 수 있다 (ADR 013 "백엔드 권한")
+# token이 유출돼도 kube-system 등 다른 namespace의 오브젝트를 바꿀 수 없게 한다. 조회(get, list)는 막지 않는다.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: hackforge-backend-lab-only
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["*"]
+        operations: [CREATE, UPDATE, DELETE]
+        resources: [namespaces, pods, resourcequotas]
+      - apiGroups: [networking.k8s.io]
+        apiVersions: ["*"]
+        operations: [CREATE, UPDATE, DELETE]
+        resources: [networkpolicies]
+  matchConditions:
+    - name: hackforge-backend-only
+      expression: request.userInfo.username == 'system:serviceaccount:hackforge:hackforge-backend'
+  variables:
+    # namespace 요청이면 그 이름, 나머지는 요청 대상 namespace
+    - name: target
+      expression: >-
+        request.kind.kind == 'Namespace'
+        ? (request.operation == 'DELETE' ? oldObject.metadata.name : object.metadata.name)
+        : request.namespace
+  validations:
+    - expression: variables.target.startsWith('lab-')
+      messageExpression: "'hackforge-backend는 lab- namespace만 다룰 수 있음: ' + variables.target"
+    - expression: >-
+        request.kind.kind != 'Namespace' || request.operation != 'CREATE'
+        || (has(object.metadata.labels) && object.metadata.labels.exists(k, k == 'hackforge/lab')
+            && object.metadata.labels['hackforge/lab'] == 'true')
+      message: 실습 namespace에는 label hackforge/lab=true가 필요함
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: hackforge-backend-lab-only
+spec:
+  policyName: hackforge-backend-lab-only
+  validationActions: [Deny]

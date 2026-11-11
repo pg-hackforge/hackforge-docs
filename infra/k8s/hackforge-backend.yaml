@@ -1,0 +1,41 @@
+# 백엔드 service account와 권한 (ADR 013 "백엔드 권한")
+# RBAC는 namespace 이름으로 범위를 좁힐 수 없어서 ClusterRole로 준다.
+# lab- namespace 밖을 다루지 못하게 하는 제한은 hackforge-backend-policy.yaml(ValidatingAdmissionPolicy)에 있다.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hackforge
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hackforge-backend
+  namespace: hackforge
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hackforge-backend
+rules:
+  - apiGroups: [""]
+    resources: [namespaces, pods]
+    verbs: [get, list, create, delete]
+  - apiGroups: [""]
+    resources: [resourcequotas]
+    verbs: [get, create]
+  - apiGroups: [networking.k8s.io]
+    resources: [networkpolicies]
+    verbs: [get, create]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: hackforge-backend
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: hackforge-backend
+subjects:
+  - kind: ServiceAccount
+    name: hackforge-backend
+    namespace: hackforge
