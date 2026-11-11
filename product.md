@@ -130,7 +130,7 @@ Challenge 하나에 들어가는 것: Compose 프로젝트, 공격 검증 규칙
 
 ## 데이터 모델 (개념)
 
-무엇을 저장해야 하는지만 적는다. 테이블, 컬럼, 키, 인덱스는 설계 단계에서 ADR로 정한다.
+무엇을 저장해야 하는지만 적는다. 테이블, 컬럼, 키, 인덱스는 설계 단계에서 ADR로 정하고, 테이블 관계는 [data-model.md](data-model.md)에 모은다.
 
 | 개념 | 저장하는 것 |
 |---|---|
@@ -142,4 +142,4 @@ Challenge 하나에 들어가는 것: Compose 프로젝트, 공격 검증 규칙
 | SessionEvent | 세션, 이전 → 다음 상태, 주체(학습자/관리자/시스템), 시각 |
 
 - 학습자당 진행 중인 세션은 1개. 앱 코드가 아니라 DB constraint로 보장함
-- 세션 상태는 기획서 초안의 `CREATING → INITIALIZING → READY → OFFENSIVE → ATTACK_VERIFIED → DEFENSIVE → REDEPLOYING → VERIFYING → COMPLETED → TERMINATING → DELETED`에서 출발함. 초기화, 생성 실패 같은 상태는 설계 단계에서 정함
+- 세션 상태는 기획서 초안의 `CREATING → INITIALIZING → READY → OFFENSIVE → ATTACK_VERIFIED → DEFENSIVE → REDEPLOYING → VERIFYING → COMPLETED → TERMINATING → DELETED`에서 출발함. 초기화, 생성 실패 같은 상태는 설계 단계에서 정함. 실습 환경(#6)의 상태와 생성 실패 상태 `FAILED`는 [ADR 012](decisions/012-실습-환경-수명-주기.md)에서 정함
