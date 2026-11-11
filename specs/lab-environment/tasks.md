@@ -2,7 +2,7 @@
 
 관련 이슈: #6 · 결정: [decisions/012](../../decisions/012-실습-환경-수명-주기.md), [decisions/013](../../decisions/013-실습-pod-격리와-백엔드-권한.md)
 
-실습 시작과 종료, 생성 실패 재시도, idle 종료까지 다룬다. 공격 대상 화면과 웹 터미널은 #8, Challenge 형식과 첫 문제(SQLi)는 #7에서 하고, 여기서는 테스트 문제(nginx + PostgreSQL) 하나로 확인한다. 화면(fe)은 스택을 정한 뒤 별도 이슈로 만들고, 이 목록은 백엔드 API, 클러스터 구성, 테스트까지만 다룬다.
+실습 시작과 종료, 생성 실패 재시도, idle 종료까지 다룬다. 공격 대상 화면과 웹 터미널은 #8, Challenge 형식과 첫 문제(SQLi)는 #7에서 하고, 여기서는 테스트 문제(nginx + PostgreSQL) 하나로 확인한다. `challenges` 테이블은 `lab_sessions`가 FK로 참조해서 여기서 만들고, 문제 목록 API(`GET /api/challenges`, spec은 hackforge-be#23)와 문제 등록 방식은 #7에서 구현한다. 화면(fe)은 스택을 정한 뒤 별도 이슈로 만들고, 이 목록은 백엔드 API, 클러스터 구성, 테스트까지만 다룬다.
 
 ## 완료 기준
 
@@ -38,9 +38,9 @@
 
 ## 작업
 
-- [ ] 1. [docs] ADR 012(수명 주기), ADR 013(격리와 백엔드 권한), 이 작업 목록, 엔티티 관계도(`data-model.md`) (확인: 사람이 정한 결정과 맞음)
-- [ ] 2. [be] `openapi.yaml`에 `GET /api/challenges`, `POST /api/labs`, `GET /api/labs/current`, `GET /api/labs/{id}`, `DELETE /api/labs/{id}`, `POST /api/labs/{id}/activity`, 오류 코드 6개 추가 (테스트: OpenAPI lint)
-- [ ] 3. [be] migration으로 `challenges`, `lab_sessions` 생성, 개발 전용 seed(`db/dev`, `bootRun`에서만), `GET /api/challenges`. 같은 때 docs의 계정 운영 runbook에 `lab_sessions` 반영 (테스트: 진행 중 세션 2개 insert 시 unique 위반, 끝난 세션은 여러 개 가능, 사용자 삭제 시 세션 행 삭제, 문제 목록 조회, 운영 설정에서는 seed가 적용되지 않음)
+- [x] 1. [docs] ADR 012(수명 주기), ADR 013(격리와 백엔드 권한), 이 작업 목록, 엔티티 관계도(`data-model.md`) (확인: 사람이 정한 결정과 맞음, #32)
+- [x] 2. [be] `openapi.yaml`에 `GET /api/challenges`, `POST /api/labs`, `GET /api/labs/current`, `GET /api/labs/{id}`, `DELETE /api/labs/{id}`, `POST /api/labs/{id}/activity`, 오류 코드 6개 추가 (테스트: OpenAPI lint, hackforge-be#23)
+- [ ] 3. [be] migration으로 `challenges`, `lab_sessions` 생성, 개발 전용 seed(`db/dev`, `bootRun`에서만). 같은 때 docs의 계정 운영 runbook에 `lab_sessions` 반영 (테스트: 진행 중 세션 2개 insert 시 unique 위반, 끝난 세션은 여러 개 가능, 사용자 삭제 시 세션 행 삭제, 세션 있는 문제 삭제 거절, 운영 설정에서는 seed가 적용되지 않음)
 - [ ] 4. [docs] `infra/`에 GlobalNetworkPolicy, 백엔드 service account와 RBAC, ValidatingAdmissionPolicy manifest, `cluster-setup.md`에 적용 단계와 kubelet `podPidsLimit` 추가, 개발 VM에 적용, 백엔드용 kubeconfig 만드는 절차 (확인: 백엔드 kubeconfig로 `lab-` namespace 생성·삭제는 되고 `kube-system` 조작은 거절됨)
 - [ ] 5. [docs] `infra/lab-test-challenge/`에 테스트 문제 이미지(Dockerfile, `app/compose.yaml`, `hackforge/entrypoint.sh`, `hackforge/ready.sh`), 개발 VM에 import하는 절차. 시작 시간과 CPU, 메모리, 디스크 사용량을 재서 개발 설정값 결정 (확인: 개발 VM에서 Pod가 Ready가 되고 compose 서비스가 모두 healthy, 측정값 기록)
 - [ ] 6. [be] `LabCluster` 인터페이스와 client-java 구현, 테스트용 fake. client-java transitive dependency 확인. 실제 클러스터 테스트는 JUnit tag `cluster`로 `./gradlew build`에서 빼고 `./gradlew clusterTest`로 실행 (테스트: 개발 VM에서 namespace, NetworkPolicy, ResourceQuota, Pod 생성과 삭제, 같은 이름 생성은 `AlreadyExists`, `privileged` Pod 거절, `kube-system` 조작 거절)

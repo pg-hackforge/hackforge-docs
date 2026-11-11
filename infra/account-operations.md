@@ -3,7 +3,7 @@
 관리자가 API 없이 서버에서 직접 하는 계정 작업 두 가지, 첫 관리자 만들기와 탈퇴 요청 처리의 절차다. 모두 개발 DB에서 실제로 실행한 명령이다.
 
 - 결정: [ADR 011](../decisions/011-계정-규칙.md)
-- 기준: hackforge-be migration V3까지(2026-11-09). `users`나 `spring_session` schema가 바뀌거나 `users`를 참조하는 테이블이 생기면 같은 PR에서 이 문서도 고친다.
+- 기준: hackforge-be migration V5까지(2026-11-12). `users`나 `spring_session` schema가 바뀌거나 `users`를 참조하는 테이블이 생기면 같은 PR에서 이 문서도 고친다.
 
 ## placeholder
 
@@ -83,7 +83,7 @@ unset PW; rm -f "$JAR"
 
 ## 2. 탈퇴 요청 처리
 
-v1에는 탈퇴 API가 없어서 사용자가 관리자에게 탈퇴를 요청하고 서버 관리자가 DB에서 계정을 지운다. 지우면 이메일, 이름, 닉네임, 소속, 가입 메모 등 그 계정의 개인정보가 DB에서 없어지고, 같은 이메일과 닉네임으로 다시 가입할 수 있게 된다. 지금은 `users`를 참조하는 테이블이 없어서 `users` 행과 세션만 지우면 된다.
+v1에는 탈퇴 API가 없어서 사용자가 관리자에게 탈퇴를 요청하고 서버 관리자가 DB에서 계정을 지운다. 지우면 이메일, 이름, 닉네임, 소속, 가입 메모 등 그 계정의 개인정보가 DB에서 없어지고, 같은 이메일과 닉네임으로 다시 가입할 수 있게 된다. `users`를 참조하는 테이블은 `lab_sessions`(실습 세션)이고 FK가 `ON DELETE CASCADE`라서, `users` 행을 지우면 그 사용자의 실습 세션 행도 함께 삭제된다. 진행 중이던 실습 환경(namespace `lab-<세션 id>`)은 백엔드의 orphan 정리가 삭제한다([ADR 012](../decisions/012-실습-환경-수명-주기.md)).
 
 아래 세 가지는 v1.1 이메일 인증(#18)을 만들 때 정하고, 정하면 이 절차에 반영한다.
 
@@ -101,9 +101,12 @@ v1에는 탈퇴 API가 없어서 사용자가 관리자에게 탈퇴를 요청�
 \set email 'user@example.com'
 select id, email, name, nickname, affiliation, role, status, created_at from users where email = :'email';   -- 1 row
 select count(*) from users where role = 'ADMIN' and email <> :'email';
+select id, status from lab_sessions
+  where user_id = (select id from users where email = :'email') and status not in ('DELETED', 'FAILED');   -- 0 또는 1 row
 ```
 
 - 첫 번째 결과가 1행이고 이름, 소속이 요청자와 맞는지 봄
+- 세 번째 결과가 1행이면 진행 중인 실습이 있음. 삭제하면 로그인 세션과 실습 세션이 함께 삭제돼 실습이 중단되므로, 요청자에게 알리고 진행함
 - 대상이 `ADMIN`인데 두 번째 결과가 0이면 지우지 않음. 관리자가 한 명도 남지 않으면 승인과 역할 변경을 할 사람이 없어 1절을 다시 해야 함. 다른 사람을 먼저 관리자로 만든 뒤 지움
 
 ### 2.2 삭제
