@@ -1,0 +1,10 @@
+# 실습 Pod의 Ingress, Egress를 모두 거절한다 (ADR 013 "네트워크")
+# 백엔드가 namespace마다 만드는 NetworkPolicy(deny-all)와 별개로, namespace가 생기기 전부터 적용된다.
+# 허용 규칙이 없으면 선택된 Pod의 통신은 모두 거절된다. Calico 전용 오브젝트
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: hackforge-lab-deny-all
+spec:
+  namespaceSelector: hackforge/lab == "true"
+  types: [Ingress, Egress]

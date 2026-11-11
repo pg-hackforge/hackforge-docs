@@ -8,7 +8,7 @@ Hackforge의 기획, 결정, 기능 spec을 두는 저장소다. 코드는 [hack
 | [data-model.md](data-model.md) | 플랫폼 DB 테이블과 관계도 |
 | [decisions/](decisions) | ADR. 결정 하나당 파일 하나, 추가만 함 |
 | `specs/<기능>/tasks.md` | 큰 기능의 작업 목록. 기능 시작할 때 생성 |
-| [infra/](infra) | 클러스터·서버 구성과 운영 runbook. [cluster-setup.md](infra/cluster-setup.md): single node에 kubeadm, Calico, Sysbox 설치. [account-operations.md](infra/account-operations.md): 첫 관리자 만들기, 탈퇴 요청 처리 |
+| [infra/](infra) | 클러스터·서버 구성과 운영 runbook. [cluster-setup.md](infra/cluster-setup.md): single node에 kubeadm, Calico, Sysbox 설치와 실습 환경 정책 적용. [k8s/](infra/k8s): 클러스터에 한 번 적용하는 manifest(백엔드 권한, 실습 네트워크 차단). [account-operations.md](infra/account-operations.md): 첫 관리자 만들기, 탈퇴 요청 처리 |
 
 ## 기능 하나를 만드는 순서
 
