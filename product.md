@@ -109,7 +109,7 @@ Challenge 하나에 들어가는 것: Compose 프로젝트, 공격 검증 규칙
 
 | 영역 | 현재 | 근거 |
 |---|---|---|
-| 백엔드 | Java 25, Spring Boot 4.1.1, Gradle 9.8.1 | `hackforge-be/build.gradle` |
+| 백엔드 | Java 25, Spring Boot 4.1.2, Gradle 9.8.1 | `hackforge-be/build.gradle` |
 | DB | PostgreSQL 18(dev·test·prod 같은 major), schema는 Flyway | [ADR 010](decisions/010-db-postgresql-flyway.md) |
 | Kubernetes 연동 | client-java 27.0.1 | [ADR 001](decisions/001-kubernetes-client-버전.md) |
 | 클러스터 | Ubuntu 24.04, kubeadm Kubernetes 1.35, containerd 2.2, Sysbox 0.7.1, Calico 3.33. 개발 VM(Hyper-V, 최소 사양) 구성 완료(2026-11-03), 운영 서버는 같은 구성으로 구성 예정 | [ADR 005](decisions/005-실습-환경-실행-기반.md), [ADR 006](decisions/006-개발-VM과-운영-서버.md), [ADR 008](decisions/008-개발-VM-실행-환경.md), [ADR 009](decisions/009-sysbox-containerd-설정.md) |
