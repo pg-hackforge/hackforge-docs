@@ -15,7 +15,7 @@ Ubuntu Server 24.04 single node에 kubeadm 1.35, containerd 2.x, Calico, Sysbox�
 | `<NODE_IP>` | API server와 kubelet이 쓸 노드 주소. 관리 PC에서 접근 가능해야 함 | internal switch 주소 |
 | `<POD_CIDR>` | Pod 대역. 노드·사무실 내부망과 겹치면 안 됨 | `10.244.0.0/16` |
 | `<NODE_NAME>` | `kubectl get nodes`에 보이는 이름(호스트 이름) | `ubuntu` |
-| `<POD_PIDS_LIMIT>` | Pod 하나의 프로세스·스레드 수 상한(8단계). 미정(실측 후 결정): 테스트 문제 실측(#6 작업 5) 후 확정 | `4096` |
+| `<POD_PIDS_LIMIT>` | Pod 하나의 프로세스·스레드 수 상한(8단계). 테스트 문제 Pod는 75개 사용([lab-test-challenge](lab-test-challenge/README.md)) | `4096` |
 
 ## 0. 전제 조건
 
@@ -328,6 +328,7 @@ kubectl -n kube-system edit configmap kubelet-config       # data.kubelet 끝에
 확인:
 
 ```bash
+kubectl get --raw "/api/v1/nodes/<NODE_NAME>:10250/proxy/configz" | grep -o '"podPidsLimit":[0-9-]*'    # <POD_PIDS_LIMIT>
 kubectl -n kube-system get configmap kubelet-config -o yaml | grep podPidsLimit    # podPidsLimit: <POD_PIDS_LIMIT>
 kubectl run pidcheck -n default --image=busybox:1.37 --restart=Never --command -- sleep 300
 kubectl wait --for=condition=Ready pod/pidcheck -n default --timeout=120s
@@ -337,7 +338,7 @@ cat $(find /sys/fs/cgroup/kubepods.slice -maxdepth 2 -type d -name "*pod${POD_UI
 kubectl delete pod pidcheck -n default
 ```
 
-이미 떠 있는 Pod에는 적용되지 않고, 새로 만들어지는 Pod부터 적용된다. kubelet의 `/configz`로 설정을 보는 방법은 개발 VM에서 `NotFound`가 나서 쓰지 않는다.
+이미 떠 있는 Pod에는 적용되지 않고, 새로 만들어지는 Pod부터 적용된다. node proxy 경로에는 kubelet port(`:10250`)를 붙여야 하고, 빼면 `NotFound`가 난다.
 
 ### 8.2 백엔드 권한과 실습 네트워크 차단
 

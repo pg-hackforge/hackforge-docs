@@ -32,7 +32,8 @@
 - 백엔드 재시작: DB 상태에서 이어서 진행. 요청은 DB에만 쓰고 클러스터는 reconciler만 호출함
 - API server 연결 실패: 로그만 남기고 다음 주기에 재시도. 길어지면 생성 중인 세션은 `start-timeout`으로 실패 처리
 - DB에 진행 중 세션이 없는 `lab-` namespace(탈퇴로 세션 행이 지워진 경우 등): orphan 정리가 삭제
-- 미정(실측 후 결정): `start-timeout`(우선 5m), 세션당 CPU, 메모리, 디스크, `podPidsLimit`. 개발 VM에서 먼저 재고 운영 값은 운영 서버에서 확인 (ADR 006)
+- 개발 VM 설정값: CPU 500m, 메모리 512Mi, 디스크 2Gi, `max-concurrent` 2, `podPidsLimit` 4096, `start-timeout` 5m(2026-11-12 결정, 테스트 문제 Ready까지 21초)
+- 미정(실측 후 결정): 운영 서버의 위 값. 운영 서버에서 확인 (ADR 006)
 - 미정(결정 필요): 운영 서버에 Challenge 이미지를 넣는 방법. 운영 서버 구성 때 정함
 - 백엔드 service account는 namespace `hackforge`에 둠(2026-11-12 결정, ADR 013)
 
@@ -41,8 +42,8 @@
 - [x] 1. [docs] ADR 012(수명 주기), ADR 013(격리와 백엔드 권한), 이 작업 목록, 엔티티 관계도(`data-model.md`) (확인: 사람이 정한 결정과 맞음, #32)
 - [x] 2. [be] `openapi.yaml`에 `GET /api/challenges`, `POST /api/labs`, `GET /api/labs/current`, `GET /api/labs/{id}`, `DELETE /api/labs/{id}`, `POST /api/labs/{id}/activity`, 오류 코드 6개 추가 (테스트: OpenAPI lint, hackforge-be#23)
 - [x] 3. [be] migration으로 `challenges`, `lab_sessions` 생성, 개발 전용 seed(`db/dev`, `bootRun`에서만). 같은 때 docs의 계정 운영 runbook에 `lab_sessions` 반영 (테스트: 진행 중 세션 2개 insert 시 unique 위반, 끝난 세션은 여러 개 가능, 사용자 삭제 시 세션 행 삭제, 세션 있는 문제 삭제 거절, 운영 설정에서는 seed가 적용되지 않음, hackforge-be#24, #33)
-- [ ] 4. [docs] `infra/`에 GlobalNetworkPolicy, 백엔드 service account와 RBAC, ValidatingAdmissionPolicy manifest, `cluster-setup.md`에 적용 단계와 kubelet `podPidsLimit` 추가, 개발 VM에 적용, 백엔드용 kubeconfig 만드는 절차 (확인: 백엔드 kubeconfig로 `lab-` namespace 생성·삭제는 되고 `kube-system` 조작은 거절됨)
-- [ ] 5. [docs] `infra/lab-test-challenge/`에 테스트 문제 이미지(Dockerfile, `app/compose.yaml`, `hackforge/entrypoint.sh`, `hackforge/ready.sh`), 개발 VM에 import하는 절차. 시작 시간과 CPU, 메모리, 디스크 사용량을 재서 개발 설정값 결정 (확인: 개발 VM에서 Pod가 Ready가 되고 compose 서비스가 모두 healthy, 측정값 기록)
+- [x] 4. [docs] `infra/`에 GlobalNetworkPolicy, 백엔드 service account와 RBAC, ValidatingAdmissionPolicy manifest, `cluster-setup.md`에 적용 단계와 kubelet `podPidsLimit` 추가, 개발 VM에 적용, 백엔드용 kubeconfig 만드는 절차 (확인: 백엔드 kubeconfig로 `lab-` namespace 생성·삭제는 되고 `kube-system` 조작은 거절됨, #34)
+- [x] 5. [docs] `infra/lab-test-challenge/`에 테스트 문제 이미지(Dockerfile, `app/compose.yaml`, `hackforge/entrypoint.sh`, `hackforge/ready.sh`), 개발 VM에 import하는 절차. 시작 시간과 CPU, 메모리, 디스크 사용량을 재서 개발 설정값 결정 (확인: 개발 VM에서 Pod가 Ready가 되고 compose 서비스가 모두 healthy, 측정값 기록)
 - [ ] 6. [be] `LabCluster` 인터페이스와 client-java 구현, 테스트용 fake. client-java transitive dependency 확인. 실제 클러스터 테스트는 JUnit tag `cluster`로 `./gradlew build`에서 빼고 `./gradlew clusterTest`로 실행 (테스트: 개발 VM에서 namespace, NetworkPolicy, ResourceQuota, Pod 생성과 삭제, 같은 이름 생성은 `AlreadyExists`, `privileged` Pod 거절, `kube-system` 조작 거절)
 - [ ] 7. [be] 시작 API(승인 확인, advisory lock으로 정원 확인, 학습자당 1세션), `GET /api/labs/current`, `GET /api/labs/{id}` (테스트: 승인 대기·거절 403, 정원 초과 503, 같은 학습자 동시 시작 2건 중 1건만 성공, 정원 직전 여러 학습자 동시 시작 시 정원까지만 성공, 남의 세션 404, `current`가 없으면 204)
 - [ ] 8. [be] `LabReconciler` 생성 흐름: `CREATING` → `INITIALIZING` → `READY`, 실패 시 재시도 1회와 `FAILED`, `READY` 중 Pod 유실 시 `POD_LOST` (테스트: fake 클러스터와 주입한 `Clock`으로 각 전이, `start-timeout` 초과, 두 번째 실패 후 `FAILED`, 재시도 Pod가 세션의 `image`를 씀, 한 세션의 예외가 다른 세션 처리를 막지 않음)

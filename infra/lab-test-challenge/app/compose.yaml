@@ -1,0 +1,22 @@
+# 학습자 환경의 서비스. 서비스마다 healthcheck를 둔다(ready.sh가 healthy를 기다림)
+services:
+  db:
+    image: postgres:18.1-alpine
+    pull_policy: never
+    environment:
+      POSTGRES_PASSWORD: lab
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 1s
+      retries: 60
+  web:
+    image: nginx:1.29.3-alpine
+    pull_policy: never
+    ports: ["8080:80"]
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 1s
+      retries: 30

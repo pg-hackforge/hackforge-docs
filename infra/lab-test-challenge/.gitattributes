@@ -1,0 +1,2 @@
+# 이미지 안에서 실행되는 파일. Windows checkout에서도 CRLF로 바꾸지 않는다
+* text=auto eol=lf
