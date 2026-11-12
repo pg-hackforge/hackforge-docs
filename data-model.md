@@ -9,6 +9,7 @@ erDiagram
     users ||--o{ spring_session : "로그인 세션 (principal_name, FK 없음)"
     users ||--o{ lab_sessions : "시작"
     challenges ||--o{ lab_sessions : "문제"
+    challenges ||--|{ challenge_hints : "힌트 (계획)"
     lab_sessions ||--o{ verifications : "계획"
     lab_sessions ||--o{ redeploys : "계획"
     lab_sessions ||--o{ session_events : "계획"
@@ -32,6 +33,17 @@ erDiagram
         varchar slug UK
         varchar title
         varchar image
+        text description "계획: 아래 컬럼은 V7"
+        text attack_check
+        text exploit
+        text functional_test
+        smallint max_defense_attempts
+    }
+    challenge_hints {
+        bigint challenge_id PK, FK
+        varchar stage PK "ATTACK, DEFENSE"
+        smallint position PK "1~3"
+        text content
     }
     lab_sessions {
         bigint id PK "namespace lab-<id>"
@@ -52,7 +64,8 @@ erDiagram
 |---|---|---|
 | `users` | 구현됨 (be migration V2, V3) | [ADR 011](decisions/011-계정-규칙.md) |
 | `spring_session`, `spring_session_attributes` | 구현됨 (be migration V1) | [ADR 002](decisions/002-인증-방식.md), [ADR 010](decisions/010-db-postgresql-flyway.md) |
-| `challenges` | 구현됨 (be migration V4) | [ADR 012](decisions/012-실습-환경-수명-주기.md) |
+| `challenges` | 구현됨 (be migration V4). 설명, 해답, 검증 스크립트, 최대 시도 횟수 컬럼은 계획(#7 작업 3) | [ADR 012](decisions/012-실습-환경-수명-주기.md), [ADR 014](decisions/014-challenge-형식과-등록.md) |
+| `challenge_hints` | 계획 (#7 작업 3) | [ADR 014](decisions/014-challenge-형식과-등록.md) |
 | `lab_sessions` | 구현됨 (be migration V5) | [ADR 012](decisions/012-실습-환경-수명-주기.md) |
 | `verifications` | 계획. product.md의 Verification | #9 공격 검증과 단계별 힌트, #11 방어 검증 |
 | `redeploys` | 계획. product.md의 Redeploy | #10 방어: 웹 IDE, 재빌드·재배포, 초기화 |
@@ -60,5 +73,6 @@ erDiagram
 
 - `spring_session.principal_name`은 `users.id`를 문자열로 담지만 FK가 아님. 역할 변경, 임시 비밀번호 발급, 탈퇴 때 앱이나 runbook이 직접 지움
 - `lab_sessions.user_id`는 `ON DELETE CASCADE`, `lab_sessions.challenge_id`는 `ON DELETE RESTRICT`
+- `challenge_hints.challenge_id`는 `ON DELETE CASCADE`. 문제마다 공격 힌트 3개, 방어 힌트 3개
 - 계획인 테이블의 이름과 관계는 product.md 개념에서 옮긴 것이고, 그 이슈를 설계할 때 정함
 - product.md의 LabSession 개념 중 공개한 힌트 수, 공격 건너뜀 여부, 방어 검증 시도 횟수는 #9, #11에서 `lab_sessions` 컬럼으로 추가함
