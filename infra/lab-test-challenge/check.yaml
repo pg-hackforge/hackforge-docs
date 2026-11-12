@@ -1,0 +1,41 @@
+# 테스트 문제 확인용. 백엔드가 세션마다 만드는 오브젝트(ADR 013)와 같은 구성이고, 자원은 개발 VM 값
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lab-check-challenge
+  labels: {hackforge/lab: "true", pod-security.kubernetes.io/enforce: baseline}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: deny-all, namespace: lab-check-challenge}
+spec: {podSelector: {}, policyTypes: [Ingress, Egress]}
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata: {name: lab, namespace: lab-check-challenge}
+spec:
+  hard: {pods: "1"}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: lab, namespace: lab-check-challenge}
+spec:
+  runtimeClassName: sysbox-runc
+  hostUsers: false
+  automountServiceAccountToken: false
+  enableServiceLinks: false
+  restartPolicy: Never
+  containers:
+    - name: lab
+      image: hackforge/lab-test-challenge:0.1.0
+      imagePullPolicy: IfNotPresent
+      resources:
+        requests: {cpu: 500m, memory: 512Mi, ephemeral-storage: 2Gi}
+        limits: {cpu: 500m, memory: 512Mi, ephemeral-storage: 2Gi}
+      readinessProbe:
+        exec: {command: [/hackforge/ready.sh]}
+        periodSeconds: 3
+      volumeMounts: [{name: docker, mountPath: /var/lib/docker}]
+  volumes:
+    - name: docker
+      emptyDir: {sizeLimit: 2Gi}
