@@ -24,6 +24,9 @@ spec:
   hostUsers: false
   automountServiceAccountToken: false
   enableServiceLinks: false
+  # Pod 안 compose container가 서비스 이름을 클러스터 DNS보다 먼저 찾게 한다(ADR 013)
+  dnsPolicy: None
+  dnsConfig: {nameservers: [127.0.0.1]}
   restartPolicy: Never
   containers:
     - name: lab

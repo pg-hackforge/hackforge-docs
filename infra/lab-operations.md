@@ -131,4 +131,4 @@ $K get pod lab -n lab-A -o jsonpath='{.status.reason} {.status.message}'
 
 | 증상 | 원인 | 조치 |
 |---|---|---|
-| Pod 안 compose container가 서비스 이름(`db`)으로 접속하지 못함. IP로는 됨 | inner docker가 Pod의 `/etc/resolv.conf`(`search lab-<ID>.svc.cluster.local ...`, `ndots:5`)를 container에 물려줌. `db`를 `db.lab-<ID>.svc.cluster.local`부터 찾고, 그 질의를 클러스터 DNS로 보내다 GlobalNetworkPolicy에 막혀 timeout. container에서 `search`와 `options` 줄을 지우면 바로 됨 | 미정(결정 필요): Pod spec에 `dnsPolicy: None`과 `dnsConfig`(search 없음)를 넣는 수정. 서비스 이름을 쓰는 문제를 올리기 전에 해야 함 |
+| Pod 안 compose container가 서비스 이름(`db`)으로 접속하지 못함. IP로는 됨 | inner docker가 Pod의 `/etc/resolv.conf`(`search lab-<ID>.svc.cluster.local ...`, `ndots:5`)를 container에 물려줌. `db`를 `db.lab-<ID>.svc.cluster.local`부터 찾고, 그 질의를 클러스터 DNS로 보내다 GlobalNetworkPolicy에 막혀 timeout | Pod spec에 `dnsPolicy: None`, `dnsConfig: {nameservers: [127.0.0.1]}`(ADR 013, hackforge-be에서 반영). `check.yaml`로 확인: `web`에서 `db`로 이름 접속 성공, 인터넷은 계속 막힘 |
