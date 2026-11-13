@@ -9,7 +9,7 @@ erDiagram
     users ||--o{ spring_session : "로그인 세션 (principal_name, FK 없음)"
     users ||--o{ lab_sessions : "시작"
     challenges ||--o{ lab_sessions : "문제"
-    challenges ||--|{ challenge_hints : "힌트 (계획)"
+    challenges ||--|{ challenge_hints : "힌트"
     lab_sessions ||--o{ verifications : "계획"
     lab_sessions ||--o{ redeploys : "계획"
     lab_sessions ||--o{ session_events : "계획"
@@ -33,7 +33,7 @@ erDiagram
         varchar slug UK
         varchar title
         varchar image
-        text description "계획: 아래 컬럼은 V7"
+        text description
         text attack_check
         text exploit
         text functional_test
@@ -64,8 +64,8 @@ erDiagram
 |---|---|---|
 | `users` | 구현됨 (be migration V2, V3) | [ADR 011](decisions/011-계정-규칙.md) |
 | `spring_session`, `spring_session_attributes` | 구현됨 (be migration V1) | [ADR 002](decisions/002-인증-방식.md), [ADR 010](decisions/010-db-postgresql-flyway.md) |
-| `challenges` | 구현됨 (be migration V4). 설명, 해답, 검증 스크립트, 최대 시도 횟수 컬럼은 계획(#7 작업 3) | [ADR 012](decisions/012-실습-환경-수명-주기.md), [ADR 014](decisions/014-challenge-형식과-등록.md) |
-| `challenge_hints` | 계획 (#7 작업 3) | [ADR 014](decisions/014-challenge-형식과-등록.md) |
+| `challenges` | 구현됨 (be migration V4, V7) | [ADR 012](decisions/012-실습-환경-수명-주기.md), [ADR 014](decisions/014-challenge-형식과-등록.md) |
+| `challenge_hints` | 구현됨 (be migration V7) | [ADR 014](decisions/014-challenge-형식과-등록.md) |
 | `lab_sessions` | 구현됨 (be migration V5) | [ADR 012](decisions/012-실습-환경-수명-주기.md) |
 | `verifications` | 계획. product.md의 Verification | #9 공격 검증과 단계별 힌트, #11 방어 검증 |
 | `redeploys` | 계획. product.md의 Redeploy | #10 방어: 웹 IDE, 재빌드·재배포, 초기화 |
