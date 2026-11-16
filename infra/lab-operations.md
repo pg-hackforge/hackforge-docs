@@ -5,6 +5,7 @@
 - 결정: [ADR 012](../decisions/012-실습-환경-수명-주기.md)(수명 주기, reconciler), [ADR 013](../decisions/013-실습-pod-격리와-백엔드-권한.md)(격리와 백엔드 권한)
 - 클러스터 정책 적용: [cluster-setup.md](cluster-setup.md) 8단계
 - 기준: hackforge-be #31(실습 idle 종료와 활동 기록 API)까지. Pod spec이나 reconciler 동작이 바뀌면 같은 PR에서 이 문서도 고친다.
+- 문제 등록과 첫 문제 측정(4, 5절): [ADR 014](../decisions/014-challenge-형식과-등록.md), 2026-11-16
 
 ## placeholder
 
@@ -126,6 +127,51 @@ $K get pod lab -n lab-A -o jsonpath='{.status.reason} {.status.message}'
 | `/root`(container 쓰기 계층) | `Evicted`: `Pod ephemeral local storage usage exceeds the total limit of containers 2Gi.` | 약 15초 |
 
 두 경우 모두 reconciler가 `POD_LOST`로 종료하고 namespace를 지웠다. 다른 세션은 `READY`로 남았고, 노드 디스크 사용량은 확인 전과 같았다(Pod와 함께 지워짐).
+
+## 4. 문제 등록
+
+형식과 스크립트는 [ADR 014](../decisions/014-challenge-형식과-등록.md)와 각 문제 저장소 README에 있다. 순서는 빌드, 노드 import, 등록이다. import 전에 등록하면 그 사이 시작한 세션이 이미지를 찾지 못해 `FAILED`가 된다.
+
+```bash
+# 관리 PC, 문제 저장소에서
+sh build.sh <TAG>                    # challenge-<SLUG>-<TAG>.tar
+scp challenge-<SLUG>-<TAG>.tar <user>@<NODE_IP>:~/
+# 노드에서. 개발 VM에는 crictl이 없어 ctr로 확인한다
+sudo ctr -n k8s.io images import --platform linux/amd64 ~/challenge-<SLUG>-<TAG>.tar
+sudo ctr -n k8s.io images ls -q | grep challenge-<SLUG>
+# 관리 PC, 문제 저장소에서. register.sh는 stdin을 넘기므로 <PSQL>에 -T(docker compose exec)나 -i(docker exec, kubectl exec)가 필요하다
+PSQL="docker exec -i hackforge-be-postgres-1 psql -U hackforge" sh register.sh <TAG>
+```
+
+## 5. 첫 문제(`sqli-login`) 측정 (2026-11-16)
+
+개발 VM(2 vCPU, 4GB)에서 백엔드 API로 `sqli-login` 1.0.0 세션을 시작해 쟀다. Pod 자원은 개발 VM 값(CPU 500m, 메모리 512Mi, 디스크 2Gi)이다.
+
+| 항목 | 값 |
+|---|---|
+| Pod 생성 → Ready | 69초 (API 요청부터 `READY` 응답까지 71초) |
+| 단계별 시간 | container 시작 2초, dockerd 준비 4초, 이미지 load 44초, compose up 15초(MySQL 초기화와 healthy 대기 포함), Ready 판단 4초 |
+| CPU | 사용 30.1초 중 throttle 27.7초. 이미지 load가 CPU 500m에 묶여 가장 오래 걸림 |
+| 메모리 | peak 512MiB(limit 도달), 그중 anon 241MiB, page cache 199MiB. OOM 0. inner container는 `db` 202MiB, `web` 47MiB |
+| 디스크(kubelet 집계) | 1555MiB / 2Gi. inner docker 이미지 1.32GB(`mysql` 810MB, `web`과 base가 공유하는 510MB), MySQL volume 219MB |
+
+검증 스크립트는 백엔드가 쓸 방식대로 `$K exec -i -n lab-<ID> lab -- sh -c 'cd /app && timeout 60 sh' < meta/<스크립트>`로 실행했다.
+
+| 순서 | 스크립트 | exit | 마지막 줄 | 걸린 시간 |
+|---|---|---|---|---|
+| 1 | `attack-check.sh` | 1 | admin으로 로그인한 기록 없음 | 1초 안 |
+| 2 | `functional-test.sh` | 0 | 정상 기능 3개 모두 동작 | 1초 안 |
+| 3 | `exploit.sh` | 0 | payload 5개 중 5개가 아직 통함 | 1초 안 |
+| 4 | `attack-check.sh` | 0 | admin으로 로그인함 (5회) | 1초 |
+| 5 | 해답대로 `index.php` 수정, `docker compose build web`, `up -d` | 0 | | 4초, Ready까지 7초 |
+| 6 | `exploit.sh` | 1 | payload 5개 모두 막힘 | 1초 안 |
+| 7 | `functional-test.sh` | 0 | 정상 기능 3개 모두 동작 | 1초 안 |
+
+- 메모리 512Mi 안에서 동작한다. limit에 닿는 것은 page cache라 회수되고, 재빌드 뒤에도 OOM은 없었다(ADR 014의 실측 항목)
+- 디스크는 시작 직후부터 2Gi의 약 76%를 쓴다. 재빌드는 base 위 `COPY` 계층만 늘어서 거의 늘지 않는다. 이미지가 더 큰 문제를 추가하면 여유가 부족할 수 있다
+- 미정(결정 필요): 디스크 2Gi를 유지하고 문제 이미지 크기에 상한을 둘지, 실습 Pod 디스크를 늘릴지. 다음 문제를 만들 때 정함
+- kubelet 디스크 집계는 바로 갱신되지 않는다. Ready 직후 510MiB로 보였다가 다음 갱신에 1555MiB가 됐다
+- `kubectl exec`가 0이 아닌 exit code로 끝나면 kubectl이 stderr에 `command terminated with exit code 1`을 덧붙인다. 결과 메시지는 stdout의 마지막 줄만 읽어야 한다(#9, #11)
 
 ## known issues
 

@@ -20,7 +20,8 @@ Challenge 저장소 형식, 검증 스크립트 실행 계약, 등록 방식을 
 - 같은 slug로 다시 등록: 이미지 tag, 설명, 힌트, 해답, 스크립트를 갱신. 진행 중이 아닌 옛 세션 기록은 그대로
 - 검증 스크립트가 60초를 넘김: FAIL로 봄(실행은 #9, #11)
 - Pod 안에서 다시 빌드할 때 외부 통신 없음: 재빌드 대상 서비스는 base 이미지 위 `COPY`만 하므로 오프라인으로 빌드됨
-- 미정(실측 후 결정): MySQL을 포함한 첫 문제가 메모리 512Mi 안에 들어가는지. 작업 7에서 측정하고, 넘치면 실습 Pod 메모리 상향이나 MariaDB를 다시 검토
+- MySQL을 포함한 첫 문제가 메모리 512Mi 안에 들어가는지: 작업 7에서 측정, 512Mi 안에서 동작(OOM 없음, anon 241MiB). 결과는 [infra/lab-operations.md](../../infra/lab-operations.md) 5절
+- 미정(결정 필요): 첫 문제가 시작 직후부터 디스크 2Gi의 약 76%(1555MiB)를 씀. 2Gi를 유지하고 문제 이미지 크기에 상한을 둘지, 실습 Pod 디스크를 늘릴지는 다음 문제를 만들 때 정함
 - 미정(결정 필요): 운영 서버에 Challenge 이미지를 넣는 방법. 운영 서버 구성 때 정함 (ADR 012)
 
 ## 작업
@@ -31,4 +32,4 @@ Challenge 저장소 형식, 검증 스크립트 실행 계약, 등록 방식을 
 - [x] 4. [be] `GET /api/challenges` (테스트: id 순서, `description` 포함, 힌트·해답·스크립트 미포함, 승인 대기 계정도 조회, 비로그인 401, hackforge-be#35)
 - [x] 5. [challenge] `hackforge-challenge-template` 생성: 저장소 구조, 공통 `hackforge/entrypoint.sh`·`ready.sh`, Challenge `Dockerfile`, `build.sh`, `register.sh`, CI(빌드와 로컬 확인), README(형식 규칙, 로컬 확인 방법) (확인: 예시 문제로 빌드, 개발 DB에 등록하면 `GET /api/challenges`에 보임, 다시 등록하면 갱신, 진행 중 세션이 있거나 필수 파일이 없으면 거절, hackforge-challenge-template#1)
 - [x] 6. [challenge] `hackforge-challenge-sqli` 작성: PHP + Apache, MySQL 8.4, 큰따옴표로 감싼 취약 쿼리, `login_log` 증거, 스크립트 3개, 공격·방어 힌트, 해답 (확인: 네트워크를 끊고 `docker compose build`, `attack-check.sh` 공격 전 FAIL·후 PASS, `exploit.sh` 수정 전 PASS·후 FAIL, `functional-test.sh` 수정 전후 PASS, 따옴표를 막는 수정은 `functional-test.sh` FAIL, CI 통과, hackforge-challenge-sqli#1)
-- [ ] 7. [docs] 개발 VM에 `sqli-login`을 import하고 등록, 실습 시작부터 `READY`까지 시간과 메모리 측정, `kubectl exec`로 스크립트 3개 실행, 결과를 `infra/`에 기록 (확인: 512Mi 안에서 동작. 넘치면 `미정(결정 필요):`로 기록)
+- [x] 7. [docs] 개발 VM에 `sqli-login`을 import하고 등록, 실습 시작부터 `READY`까지 시간과 메모리 측정, `kubectl exec`로 스크립트 3개 실행, 결과를 `infra/`에 기록 (확인: 512Mi 안에서 동작. 넘치면 `미정(결정 필요):`로 기록)
