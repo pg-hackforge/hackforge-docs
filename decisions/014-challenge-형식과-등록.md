@@ -126,9 +126,10 @@ hackforge-challenge-<slug>/
 ### 첫 문제: `sqli-login`
 
 - 스택: PHP 8 + Apache, MySQL 8.4. MySQL은 512Mi 안에 들어가도록 메모리 설정을 줄인다(`performance_schema=OFF`, 작은 buffer pool)
-- 취약점: 로그인 쿼리가 입력을 이어 붙임(`... WHERE username = '$u' AND password_hash = SHA2('$p', 256)`). `admin' -- ` 등으로 관리자 비밀번호 없이 관리자로 로그인함
+- 취약점: 로그인 쿼리가 입력을 큰따옴표로 감싸 이어 붙임(`... WHERE username = "$u" AND password_hash = SHA2("$p", 256)`). `admin" -- ` 등으로 관리자 비밀번호 없이 관리자로 로그인함
+- 큰따옴표로 감싸는 이유: 작은따옴표로 감싸면 고치기 전 앱에서 `o'neil` 로그인이 SQL 오류로 실패해, 고치기 전에도 `functional-test.sh`가 PASS여야 한다는 형식 규칙과 맞지 않는다(2026-11-16 결정)
 - 증거: 로그인에 성공하면 앱이 쿼리 결과의 `username`을 `login_log`에 기록한다. `admin`은 무작위 비밀번호의 hash만 있어서 정상 로그인으로는 기록이 생기지 않는다
-- `exploit.sh`: `admin' -- `, `admin'#`, `' OR '1'='1' -- `, `' OR 1=1 LIMIT 1 -- `
+- `exploit.sh`: `admin" -- `, `admin"#`, `" OR "1"="1" -- `, `" OR 1=1 LIMIT 1 -- `, 아이디 `\`와 비밀번호 ` OR 1=1 -- `. 마지막 payload는 큰따옴표만 막는 수정을 FAIL로 만든다
 - `functional-test.sh`: `guest` 로그인 성공, 틀린 비밀번호 거절, 이름에 따옴표가 있는 `o'neil` 로그인 성공. 따옴표를 막는 식으로 고치면 FAIL이다
 - 최대 방어 검증 시도 5회
 
