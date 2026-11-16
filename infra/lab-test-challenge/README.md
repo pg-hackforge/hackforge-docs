@@ -28,7 +28,7 @@ registry 없이 노드의 containerd에 직접 넣는다. Pod는 `imagePullPolic
 scp infra/lab-test-challenge/lab-test-challenge-0.1.0.tar <user>@<NODE_IP>:~/
 # 노드에서
 sudo ctr -n k8s.io images import --platform linux/amd64 ~/lab-test-challenge-0.1.0.tar
-sudo crictl images | grep lab-test-challenge
+sudo ctr -n k8s.io images ls -q | grep lab-test-challenge
 ```
 
 ## 확인
