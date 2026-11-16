@@ -114,7 +114,7 @@ Challenge 하나에 들어가는 것: Compose 프로젝트, 공격 검증 규칙
 | Kubernetes 연동 | client-java 27.0.1 | [ADR 001](decisions/001-kubernetes-client-버전.md) |
 | 클러스터 | Ubuntu 24.04, kubeadm Kubernetes 1.35, containerd 2.2, Sysbox 0.7.1, Calico 3.33. 개발 VM(Hyper-V, 최소 사양) 구성 완료(2026-11-03), 운영 서버는 같은 구성으로 구성 예정 | [ADR 005](decisions/005-실습-환경-실행-기반.md), [ADR 006](decisions/006-개발-VM과-운영-서버.md), [ADR 008](decisions/008-개발-VM-실행-환경.md), [ADR 009](decisions/009-sysbox-containerd-설정.md) |
 | 인증 | 서버 세션 + cookie, Spring Session JDBC. GitHub·Google 로그인은 v1.2 | [ADR 002](decisions/002-인증-방식.md), [ADR 011](decisions/011-계정-규칙.md) |
-| 프론트엔드 | 미정 | `hackforge-fe` |
+| 프론트엔드 | React + Vite SPA, TypeScript, Tailwind CSS + shadcn/ui, TanStack Query, API client는 `openapi.yaml`에서 hey-api로 생성. Node 26 LTS | [ADR 015](decisions/015-fe-스택.md) |
 
 실습 환경은 Sysbox Pod 안의 Docker Compose로 띄운다([ADR 005](decisions/005-실습-환경-실행-기반.md)). code-server, xterm.js 같은 나머지 구성은 기획서 초안의 제안 단계라 하나씩 ADR로 확정한다.
 
