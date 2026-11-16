@@ -67,6 +67,7 @@ hackforge-challenge-<slug>/
 ├─ hackforge/                 entrypoint.sh, ready.sh. 모든 문제 공통(template 제공)
 ├─ Dockerfile                 Challenge 이미지: docker:dind + app/ + images.tar + hackforge/
 ├─ build.sh
+├─ check.sh                   로컬 확인. CI도 같은 스크립트를 실행
 └─ register.sh
 ```
 
@@ -98,7 +99,7 @@ hackforge-challenge-<slug>/
 - 모든 서비스에 healthcheck를 두고 TCP로 확인한다(`pg_isready -h 127.0.0.1`, `mysqladmin ping -h 127.0.0.1`). DB 공식 이미지는 초기화 SQL을 실행하는 동안 unix socket으로만 임시 서버를 열기 때문에, TCP로 확인해야 초기 데이터가 들어간 뒤에 healthy가 된다
 - 초기 데이터는 DB의 `/docker-entrypoint-initdb.d/`로 넣는다. 세션마다 빈 volume에서 시작하므로 매번 같은 초기 데이터가 들어간다
 - 외부 인터넷이 필요한 기능은 넣지 않는다
-- 로컬 확인: 네트워크를 끊고 `docker compose build`가 됨, `attack-check.sh`는 공격 전 FAIL·공격 후 PASS, `exploit.sh`는 고치기 전 PASS·고친 뒤 FAIL, `functional-test.sh`는 고치기 전과 뒤 모두 PASS
+- 로컬 확인: 네트워크 없이 `docker compose build`가 됨, `attack-check.sh`는 공격 전 FAIL·공격 후 PASS, `exploit.sh`는 고치기 전 PASS·고친 뒤 FAIL, `functional-test.sh`는 고치기 전과 뒤 모두 PASS. `check.sh`가 Challenge 이미지를 `--network none`으로 띄워 고치기 전 항목을 확인하고, 고친 뒤 항목은 출제자가 직접 확인한다
 
 ### 빌드와 등록
 
@@ -107,7 +108,8 @@ hackforge-challenge-<slug>/
 3. `PSQL="<PSQL>" register.sh <tag>`: `<PSQL>`은 플랫폼 DB에 psql로 접속하는 명령([계정 운영 runbook](../infra/account-operations.md)의 placeholder)이다
    - `meta/`의 필수 파일(힌트 6개, 스크립트 3개 등)이 있는지 확인한다
    - 그 문제에 진행 중 세션이 있으면 거절한다. 진행 중 세션은 시작할 때의 이미지(`lab_sessions.image`)를 쓰는데 검증 스크립트는 DB에서 읽으므로, 옛 이미지에 새 스크립트가 도는 일을 막는다
-   - 파일 내용은 psql 변수로 읽어(`\set`과 backtick) SQL 문자열을 직접 이어 붙이지 않는다
+   - 파일 내용은 `psql -v`로 변수에 넣고 SQL에서는 `:'변수'`로만 쓴다. SQL 문자열을 직접 이어 붙이지 않는다. `<PSQL>`은 DB container 안에서 psql을 실행하므로(`docker exec`, `kubectl exec`) psql의 backtick으로는 `meta/` 파일을 읽을 수 없다
+   - 문제 행을 `FOR UPDATE`로 잠근 뒤 진행 중 세션을 확인한다. 그동안 그 문제로 시작하는 세션은 `lab_sessions` FK 확인에서 기다린다
    - 한 transaction 안에서 `challenges`를 slug 기준으로 upsert하고, 그 문제의 힌트를 지운 뒤 다시 넣는다
 
 ### DB

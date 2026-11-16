@@ -7,7 +7,7 @@ Hackforge(웹 보안 공격·방어 실습 플랫폼)의 기획, 결정, 기능 
 - `../hackforge-docs`: 이 저장소. 무엇을 왜 만드는지
 - `../hackforge-be`: Spring Boot 백엔드. API spec은 `../hackforge-be/openapi.yaml`
 - `../hackforge-fe`: 프론트엔드 (스택 미정)
-- Challenge는 문제마다 private repo `hackforge-challenge-<문제>` (decisions/007)
+- Challenge는 문제마다 private repo `hackforge-challenge-<문제>`. GitHub Template `hackforge-challenge-template`에서 만든다 (decisions/007, decisions/014)
 
 ## 규칙
 
