@@ -1,6 +1,6 @@
 # fe 초기 구성 작업 목록
 
-관련 이슈: #45 · 결정: [decisions/015](../../decisions/015-fe-스택.md), [decisions/016](../../decisions/016-fe-디자인-방향.md)
+관련 이슈: #45 · 결정: [decisions/015](../../decisions/015-fe-스택.md), [decisions/016](../../decisions/016-fe-디자인-방향.md), [decisions/017](../../decisions/017-기본-테마-다크.md)
 
 hackforge-fe에 스택, 개발 환경, API 연결, mock 모드, 앱 틀을 만든다. 실제 화면(계정, 문제 목록, 실습)은 기능별 별도 이슈에서 만들고, 디자인 방향(배치, 색, 테마)은 [decisions/016](../../decisions/016-fe-디자인-방향.md)에서 정했고, 작업 6에서 색 토큰과 `DESIGN.md`로 옮긴다. fe PR은 확인할 화면 목록과 실행 방법을 적고, 리뷰는 직접 띄워서 화면으로 한다.
 
@@ -28,4 +28,4 @@ hackforge-fe에 스택, 개발 환경, API 연결, mock 모드, 앱 틀을 만�
 - [ ] 3. [fe] API 연결: `api:sync`(복사와 생성), hey-api 설정(SDK, TanStack Query), client(같은 주소, CSRF interceptor, 401 처리, Problem `code`와 `errors[]` 변환), Vite proxy, CI 생성물 일치 확인 (테스트: 데이터를 바꾸는 요청에 `X-XSRF-TOKEN`이 붙음, cookie가 없으면 먼저 받음, `VALIDATION_FAILED`가 필드별 오류로 변환됨, 401이 로그아웃 상태로 처리됨. 확인: 개발 백엔드에서 `GET /api/me` 결과가 화면에 보임)
 - [ ] 4. [fe] mock 모드: MSW, 생성 타입에 맞춘 handler, 시나리오 전환(로그인 안 됨, 승인 대기, 학습자, 관리자, 실습 CREATING·READY·FAILED·정원 초과), `dev:mock` (확인: 백엔드 없이 시나리오를 바꾸면 화면 상태가 바뀜)
 - [ ] 5. [fe] 앱 틀: 레이아웃(상단바, 사용자 메뉴, 테마 전환), React Router, 로그인 필요 구간과 관리자 구간, 승인 대기 안내 띠, 404·403·백엔드 연결 실패 화면 (확인: mock 시나리오별로 메뉴와 접근이 바뀜, 화면 목록을 PR에 적음)
-- [ ] 6. [fe] 디자인 토큰과 `DESIGN.md`: 흑연과 불씨 색 토큰(라이트·다크)을 `src/index.css`에, 색·글꼴·배치·컴포넌트 규칙을 `DESIGN.md`에, 제품 맥락을 `PRODUCT.md`에 (확인: 시작 화면이 라이트·다크에서 확정 색으로 보임, `DESIGN.md`의 값과 `src/index.css`의 값이 같음)
+- [x] 6. [fe] 디자인 토큰과 `DESIGN.md`: 흑연과 불씨 색 토큰(라이트·다크)을 `src/index.css`에, 색·글꼴·배치·컴포넌트 규칙을 `DESIGN.md`에, 제품 맥락을 `PRODUCT.md`에 (확인: 시작 화면이 라이트·다크에서 확정 색으로 보임, `DESIGN.md`의 값과 `src/index.css`의 값이 같음)
