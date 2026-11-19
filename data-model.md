@@ -10,6 +10,7 @@ erDiagram
     users ||--o{ lab_sessions : "시작"
     challenges ||--o{ lab_sessions : "문제"
     challenges ||--|{ challenge_hints : "힌트"
+    challenge_categories ||--o{ challenges : "분류"
     lab_sessions ||--o{ verifications : "계획"
     lab_sessions ||--o{ redeploys : "계획"
     lab_sessions ||--o{ session_events : "계획"
@@ -38,6 +39,16 @@ erDiagram
         text exploit
         text functional_test
         smallint max_defense_attempts
+        varchar category_key FK
+        varchar difficulty "INTRO, BEGINNER, INTERMEDIATE, ADVANCED"
+        smallint estimated_minutes
+        varchar summary "80자"
+        timestamptz created_at "NEW 판단"
+    }
+    challenge_categories {
+        varchar key PK
+        varchar name
+        smallint display_order
     }
     challenge_hints {
         bigint challenge_id PK, FK
@@ -64,7 +75,8 @@ erDiagram
 |---|---|---|
 | `users` | 구현됨 (be migration V2, V3) | [ADR 011](decisions/011-계정-규칙.md) |
 | `spring_session`, `spring_session_attributes` | 구현됨 (be migration V1) | [ADR 002](decisions/002-인증-방식.md), [ADR 010](decisions/010-db-postgresql-flyway.md) |
-| `challenges` | 구현됨 (be migration V4, V7) | [ADR 012](decisions/012-실습-환경-수명-주기.md), [ADR 014](decisions/014-challenge-형식과-등록.md) |
+| `challenges` | 구현됨 (be migration V4, V7). 분류·난이도·예상 시간·요약은 계획 (V8) | [ADR 012](decisions/012-실습-환경-수명-주기.md), [ADR 014](decisions/014-challenge-형식과-등록.md), [ADR 020](decisions/020-문제-정보와-목록-API.md) |
+| `challenge_categories` | 계획 (be migration V8) | [ADR 020](decisions/020-문제-정보와-목록-API.md) |
 | `challenge_hints` | 구현됨 (be migration V7) | [ADR 014](decisions/014-challenge-형식과-등록.md) |
 | `lab_sessions` | 구현됨 (be migration V5) | [ADR 012](decisions/012-실습-환경-수명-주기.md) |
 | `verifications` | 계획. product.md의 Verification | #9 공격 검증과 단계별 힌트, #11 방어 검증 |
@@ -74,5 +86,6 @@ erDiagram
 - `spring_session.principal_name`은 `users.id`를 문자열로 담지만 FK가 아님. 역할 변경, 임시 비밀번호 발급, 탈퇴 때 앱이나 runbook이 직접 지움
 - `lab_sessions.user_id`는 `ON DELETE CASCADE`, `lab_sessions.challenge_id`는 `ON DELETE RESTRICT`
 - `challenge_hints.challenge_id`는 `ON DELETE CASCADE`. 문제마다 공격 힌트 3개, 방어 힌트 3개
+- `challenges.category_key`는 `ON DELETE RESTRICT`. 분류는 migration으로만 더하거나 바꿈
 - 계획인 테이블의 이름과 관계는 product.md 개념에서 옮긴 것이고, 그 이슈를 설계할 때 정함
 - product.md의 LabSession 개념 중 공개한 힌트 수, 공격 건너뜀 여부, 방어 검증 시도 횟수는 #9, #11에서 `lab_sessions` 컬럼으로 추가함
