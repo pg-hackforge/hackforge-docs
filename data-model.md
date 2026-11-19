@@ -75,8 +75,8 @@ erDiagram
 |---|---|---|
 | `users` | 구현됨 (be migration V2, V3) | [ADR 011](decisions/011-계정-규칙.md) |
 | `spring_session`, `spring_session_attributes` | 구현됨 (be migration V1) | [ADR 002](decisions/002-인증-방식.md), [ADR 010](decisions/010-db-postgresql-flyway.md) |
-| `challenges` | 구현됨 (be migration V4, V7). 분류·난이도·예상 시간·요약은 계획 (V8) | [ADR 012](decisions/012-실습-환경-수명-주기.md), [ADR 014](decisions/014-challenge-형식과-등록.md), [ADR 020](decisions/020-문제-정보와-목록-API.md) |
-| `challenge_categories` | 계획 (be migration V8) | [ADR 020](decisions/020-문제-정보와-목록-API.md) |
+| `challenges` | 구현됨 (be migration V4, V7, V8) | [ADR 012](decisions/012-실습-환경-수명-주기.md), [ADR 014](decisions/014-challenge-형식과-등록.md), [ADR 020](decisions/020-문제-정보와-목록-API.md) |
+| `challenge_categories` | 구현됨 (be migration V8) | [ADR 020](decisions/020-문제-정보와-목록-API.md) |
 | `challenge_hints` | 구현됨 (be migration V7) | [ADR 014](decisions/014-challenge-형식과-등록.md) |
 | `lab_sessions` | 구현됨 (be migration V5) | [ADR 012](decisions/012-실습-환경-수명-주기.md) |
 | `verifications` | 계획. product.md의 Verification | #9 공격 검증과 단계별 힌트, #11 방어 검증 |
