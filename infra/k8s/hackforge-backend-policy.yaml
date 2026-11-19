@@ -1,4 +1,4 @@
-# 백엔드 service account는 lab- namespace만 생성·변경·삭제할 수 있다 (ADR 013 "백엔드 권한", ADR 021)
+# 백엔드 service account는 lab- namespace만 생성·변경·삭제할 수 있다 (ADR 013 "백엔드 권한", ADR 021, ADR 022)
 # token이 유출돼도 kube-system 등 다른 namespace의 오브젝트를 바꿀 수 없게 한다. 조회(get, list)는 막지 않는다.
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicy
@@ -38,15 +38,16 @@ spec:
         || (has(object.metadata.labels) && object.metadata.labels.exists(k, k == 'hackforge/lab')
             && object.metadata.labels['hackforge/lab'] == 'true')
       message: 실습 namespace에는 label hackforge/lab=true가 필요함
-    # RoleBinding은 Pod 로그 읽기 하나뿐이다(ADR 021). 역할과 대상을 고정해 다른 권한이나 다른 계정에 주지 못하게 한다
+    # RoleBinding은 Pod 로그 읽기(ADR 021)와 공격 대상·터미널 연결(ADR 022) 두 가지뿐이다. 역할과 대상을 고정해 다른 권한이나 다른 계정에 주지 못하게 한다
     - expression: >-
         request.kind.kind != 'RoleBinding' || request.operation == 'DELETE'
-        || (object.roleRef.kind == 'ClusterRole' && object.roleRef.name == 'hackforge-lab-log-reader'
+        || (object.roleRef.kind == 'ClusterRole'
+            && object.roleRef.name in ['hackforge-lab-log-reader', 'hackforge-lab-connect']
             && has(object.subjects) && size(object.subjects) == 1
             && object.subjects[0].kind == 'ServiceAccount'
             && object.subjects[0].name == 'hackforge-backend'
             && object.subjects[0]['namespace'] == 'hackforge')
-      message: RoleBinding은 역할 hackforge-lab-log-reader, 대상 hackforge/hackforge-backend 하나만 만들 수 있음
+      message: RoleBinding은 역할 hackforge-lab-log-reader 또는 hackforge-lab-connect, 대상 hackforge/hackforge-backend 하나만 만들 수 있음
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicyBinding
