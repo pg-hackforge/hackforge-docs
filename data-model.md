@@ -78,7 +78,7 @@ erDiagram
 | `challenges` | 구현됨 (be migration V4, V7, V8) | [ADR 012](decisions/012-실습-환경-수명-주기.md), [ADR 014](decisions/014-challenge-형식과-등록.md), [ADR 020](decisions/020-문제-정보와-목록-API.md) |
 | `challenge_categories` | 구현됨 (be migration V8) | [ADR 020](decisions/020-문제-정보와-목록-API.md) |
 | `challenge_hints` | 구현됨 (be migration V7) | [ADR 014](decisions/014-challenge-형식과-등록.md) |
-| `lab_sessions` | 구현됨 (be migration V5) | [ADR 012](decisions/012-실습-환경-수명-주기.md) |
+| `lab_sessions` | 구현됨 (be migration V5). 준비 단계 `prep_step`은 계획 (V9) | [ADR 012](decisions/012-실습-환경-수명-주기.md), [ADR 021](decisions/021-실습-환경-준비-단계.md) |
 | `verifications` | 계획. product.md의 Verification | #9 공격 검증과 단계별 힌트, #11 방어 검증 |
 | `redeploys` | 계획. product.md의 Redeploy | #10 방어: 웹 IDE, 재빌드·재배포, 초기화 |
 | `session_events` | 계획. product.md의 SessionEvent | #13 관리와 기록 |
