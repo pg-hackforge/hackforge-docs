@@ -26,6 +26,14 @@ rules:
   - apiGroups: [networking.k8s.io]
     resources: [networkpolicies]
     verbs: [get, create]
+  # 세션 namespace마다 Pod 로그 읽기 RoleBinding을 만든다(ADR 021). 담을 수 있는 역할은 hackforge-lab-log-reader 하나
+  - apiGroups: [rbac.authorization.k8s.io]
+    resources: [rolebindings]
+    verbs: [create]
+  - apiGroups: [rbac.authorization.k8s.io]
+    resources: [clusterroles]
+    verbs: [bind]
+    resourceNames: [hackforge-lab-log-reader]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -39,3 +47,13 @@ subjects:
   - kind: ServiceAccount
     name: hackforge-backend
     namespace: hackforge
+---
+# 실습 Pod 로그 읽기(ADR 021). 클러스터 전체에 묶지 않고, 백엔드가 lab- namespace마다 RoleBinding lab-log-reader로 묶는다
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hackforge-lab-log-reader
+rules:
+  - apiGroups: [""]
+    resources: [pods/log]
+    verbs: [get]
