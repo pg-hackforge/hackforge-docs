@@ -27,7 +27,7 @@
 
 ## 작업
 
-- [ ] 1. [docs] ADR 022(경로, origin, 연결 방식, 재연결, IDE 연결), 이 작업 목록 (확인: 사람이 정한 결정과 맞음)
+- [x] 1. [docs] ADR 022(경로, origin, 연결 방식, 재연결, IDE 연결), 이 작업 목록 (확인: 사람이 정한 결정과 맞음, #70)
 - [ ] 2. [infra] 확인 작업: 개발 클러스터의 Sysbox 실습 Pod에서 port-forward로 `127.0.0.1:8080`이 열리는지, exec TTY 셸이 되는지, sqlmap 수준의 요청(동시 10, 1000개)에서 응답 지연과 API server CPU. 결과를 `infra/lab-operations.md`에 기록 (확인: 두 연결이 동작하고 수치가 남음. 안 되면 ADR 022를 다시 봄)
 - [ ] 3. [be] `openapi.yaml` 0.5.0: `LabSessionResponse.targetUrl`(`READY`일 때만), 터미널 WebSocket 메시지 형식과 닫는 코드, 공격 대상 포트 동작 설명 (테스트: OpenAPI lint)
 - [ ] 4. [infra] `infra/k8s/`: ClusterRole `hackforge-lab-connect`, 백엔드 `bind` 대상 추가, admission policy RoleBinding 규칙 확장, `infra/cluster-setup.md` 8.2, 개발 클러스터 적용 (확인: `lab-connect` RoleBinding이 있는 namespace에서만 백엔드가 port-forward와 exec 가능, 다른 역할·대상·namespace 거절)
