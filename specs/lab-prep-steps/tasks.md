@@ -24,8 +24,8 @@
 
 ## 작업
 
-- [ ] 1. [docs] ADR 021(준비 단계, 판정, 저장, API, 권한), 이 작업 목록, `data-model.md`(`lab_sessions.prep_step`) (확인: 사람이 정한 결정과 맞음)
-- [ ] 2. [be] `openapi.yaml` 0.4.0: `LabPrepStep`, `LabSessionResponse`의 `prepStep`, `retrying` (테스트: OpenAPI lint)
-- [ ] 3. [infra] `infra/k8s/`: ClusterRole `hackforge-lab-log-reader`(`pods/log` `get`), 백엔드 ClusterRole에 `rolebindings` `create`와 `resourceNames`로 좁힌 `clusterroles` `bind`, admission policy에 RoleBinding 규칙(`lab-` namespace, 역할과 대상 고정). `infra/cluster-setup.md` 8.2 설명, 개발 클러스터에 적용 (확인: 백엔드 kubeconfig로 `lab-` namespace에 `lab-log-reader` RoleBinding 생성 성공, 다른 역할·다른 대상·`lab-` 밖 namespace는 거절, RoleBinding이 있는 namespace에서만 `kubectl auth can-i get pods --subresource=log`가 `yes`, `kube-system`은 `no`)
-- [ ] 4. [be] migration V9 `prep_step`, `LabCluster.createNamespace`에 RoleBinding 추가와 Pod 로그 읽기, reconciler 단계 판정과 저장, 응답 필드 (테스트: 가짜 클러스터로 단계 기록마다 단계 전이, 로그 읽기 실패와 기록 없음에서 단계 유지, 앞 단계 로그에서 되돌리지 않음, 재시도 시 `SPACE`와 `retrying`, Ready·종료 시 `null`, 응답 필드)
-- [ ] 5. [be] clusterTest: 개발 클러스터에서 테스트 문제 세션을 시작해 단계가 순서대로 바뀌고 Ready에서 `null`이 되는지 확인 (테스트: `./gradlew clusterTest`)
+- [x] 1. [docs] ADR 021(준비 단계, 판정, 저장, API, 권한), 이 작업 목록, `data-model.md`(`lab_sessions.prep_step`) (확인: 사람이 정한 결정과 맞음, #67)
+- [x] 2. [be] `openapi.yaml` 0.4.0: `LabPrepStep`, `LabSessionResponse`의 `prepStep`, `retrying` (테스트: OpenAPI lint, hackforge-be#45)
+- [x] 3. [infra] `infra/k8s/`: ClusterRole `hackforge-lab-log-reader`(`pods/log` `get`), 백엔드 ClusterRole에 `rolebindings` `create`와 `resourceNames`로 좁힌 `clusterroles` `bind`, admission policy에 RoleBinding 규칙(`lab-` namespace, 역할과 대상 고정). `infra/cluster-setup.md` 8.2 설명, 개발 클러스터에 적용 (확인: 백엔드 kubeconfig로 `lab-` namespace에 `lab-log-reader` RoleBinding 생성 성공, 다른 역할·다른 대상·`lab-` 밖 namespace는 거절, RoleBinding이 있는 namespace에서만 `kubectl auth can-i get pods --subresource=log`가 `yes`, `kube-system`은 `no`, #68)
+- [x] 4. [be] migration V9 `prep_step`, `LabCluster.createNamespace`에 RoleBinding 추가와 Pod 로그 읽기, reconciler 단계 판정과 저장, 응답 필드 (테스트: 가짜 클러스터로 단계 기록마다 단계 전이, 로그 읽기 실패와 기록 없음에서 단계 유지, 앞 단계 로그에서 되돌리지 않음, 재시도 시 `SPACE`와 `retrying`, Ready·종료 시 `null`, 응답 필드, hackforge-be#46)
+- [x] 5. [be] clusterTest: 개발 클러스터에서 테스트 문제 세션을 시작해 단계가 순서대로 바뀌고 Ready에서 `null`이 되는지 확인 (테스트: `./gradlew clusterTest`, hackforge-be#46)
