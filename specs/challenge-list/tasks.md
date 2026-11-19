@@ -28,10 +28,10 @@
 
 ## 작업
 
-- [ ] 1. [docs] ADR 020(문제 정보, 분류 목록, 목록 API), 이 작업 목록, `data-model.md`(`challenge_categories`, `challenges` 컬럼) (확인: 사람이 정한 결정과 맞음)
-- [ ] 2. [be] `openapi.yaml` 0.3.0: 목록 조건과 페이지 응답(`items`, `page`, `size`, `totalItems`, `totalPages`, `facets`), `GET /api/challenges/{id}` (테스트: OpenAPI lint)
-- [ ] 3. [be] migration V8: `challenge_categories`(12개), `challenges`에 `category_key`(FK), `difficulty`(CHECK), `estimated_minutes`(CHECK > 0), `summary`(80자), 이미 있는 행은 임시 값, 개발 seed `test-web` 갱신 (테스트: 없는 분류 키·난이도 값·0 이하 시간 거절, 개발 seed 적용)
-- [ ] 4. [be] `GET /api/challenges` 검색, 필터, 정렬, 페이지, 필터별 개수 (테스트: 가짜 문제 수십 개로 검색 대상 3곳, 같은 조건 "또는"·다른 조건 "그리고", 필터별 개수가 자기 조건을 빼고 셈, 0개 분류 포함, 정렬 3가지와 같은 값일 때 순서, 페이지 경계와 범위 밖, `%`·`_` 검색, 잘못된 값 400, NEW 14일 경계, 힌트·해답·스크립트 미포함)
-- [ ] 5. [be] `GET /api/challenges/{id}` (테스트: `description` 포함, 없는 id 404, 힌트·해답·스크립트 미포함, 승인 대기 계정 조회, 비로그인 401)
-- [ ] 6. [challenge] `hackforge-challenge-template`: `challenge.env` 예시에 새 값, `register.sh` 값 확인과 저장, README 형식 규칙 (확인: 개발 DB에 등록하면 목록에 새 값이 보임, 값 누락·형식 오류·없는 분류 키는 거절되고 DB가 그대로)
-- [ ] 7. [challenge] `hackforge-challenge-sqli`: 분류 `sqli`, 난이도, 예상 시간, 요약을 채워 개발 DB에 다시 등록 (확인: 두 API 응답에 값이 보이고 처음 등록 시각은 그대로)
+- [x] 1. [docs] ADR 020(문제 정보, 분류 목록, 목록 API), 이 작업 목록, `data-model.md`(`challenge_categories`, `challenges` 컬럼) (확인: 사람이 정한 결정과 맞음, #64)
+- [x] 2. [be] `openapi.yaml` 0.3.0: 목록 조건과 페이지 응답(`items`, `page`, `size`, `totalItems`, `totalPages`, `facets`), `GET /api/challenges/{id}` (테스트: OpenAPI lint, hackforge-be#39)
+- [x] 3. [be] migration V8: `challenge_categories`(12개), `challenges`에 `category_key`(FK), `difficulty`(CHECK), `estimated_minutes`(CHECK > 0), `summary`(80자), 이미 있는 행은 임시 값, 개발 seed `test-web` 갱신 (테스트: 없는 분류 키·난이도 값·0 이하 시간 거절, 개발 seed 적용, hackforge-be#40)
+- [x] 4. [be] `GET /api/challenges` 검색, 필터, 정렬, 페이지, 필터별 개수 (테스트: 가짜 문제 수십 개로 검색 대상 3곳, 같은 조건 "또는"·다른 조건 "그리고", 필터별 개수가 자기 조건을 빼고 셈, 0개 분류 포함, 정렬 3가지와 같은 값일 때 순서, 페이지 경계와 범위 밖, `%`·`_` 검색, 잘못된 값 400, NEW 14일 경계, 힌트·해답·스크립트 미포함, hackforge-be#41)
+- [x] 5. [be] `GET /api/challenges/{id}` (테스트: `description` 포함, 없는 id 404, 힌트·해답·스크립트 미포함, 승인 대기 계정 조회, 비로그인 401, hackforge-be#42)
+- [x] 6. [challenge] `hackforge-challenge-template`: `challenge.env` 예시에 새 값, `register.sh` 값 확인과 저장, README 형식 규칙 (확인: 개발 DB에 등록하면 목록에 새 값이 보임, 값 누락·형식 오류·없는 분류 키는 거절되고 DB가 그대로, hackforge-challenge-template#4)
+- [x] 7. [challenge] `hackforge-challenge-sqli`: 분류 `sqli`, 난이도, 예상 시간, 요약을 채워 개발 DB에 다시 등록 (확인: 두 API 응답에 값이 보이고 처음 등록 시각은 그대로, hackforge-challenge-sqli#2)
