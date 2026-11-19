@@ -44,7 +44,7 @@ Discover → Analyze → Exploit → (공격 검증) → Defend → Patch → Re
 - 30명 규모 운영(multi node, 생성 대기열, 백엔드 다중 인스턴스, 부하 테스트). 설계만 함
 - 외부 인터넷 접속을 허용하는 문제. 실습 환경의 외부 통신은 모두 차단(Default Deny)
 - 계정 정지(v1.1). v1의 관리자는 실습 세션 강제 종료만 함
-- 이메일 인증·메일로 비밀번호 재설정(v1.1), GitHub·Google 로그인(v1.2), 본인 탈퇴 API(탈퇴는 관리자가 처리)
+- 이메일 인증·메일로 비밀번호 재설정(v1.1), GitHub·Google 로그인(v1.2), 본인 탈퇴(v1.1. v1은 관리자가 처리)
 - 학습자 로컬에서 접속(로컬 브라우저·Burp·sqlmap으로 공격, SSH·로컬 IDE로 수정). v1.1에 HTTPS tunnel CLI로 추가([ADR 004](decisions/004-로컬-연결-방식.md))
 
 ## v1.1을 위해 v1에서 지킬 조건
