@@ -346,8 +346,8 @@ kubectl delete pod pidcheck -n default
 
 | 파일 | 내용 |
 |---|---|
-| `hackforge-backend.yaml` | namespace `hackforge`, service account `hackforge-backend`, ClusterRole과 ClusterRoleBinding |
-| `hackforge-backend-policy.yaml` | ValidatingAdmissionPolicy. `hackforge-backend`는 `lab-` namespace만 생성·변경·삭제 가능, 실습 namespace 생성 시 label `hackforge/lab=true` 필수 |
+| `hackforge-backend.yaml` | namespace `hackforge`, service account `hackforge-backend`, ClusterRole과 ClusterRoleBinding, 실습 Pod 로그 읽기용 ClusterRole `hackforge-lab-log-reader` |
+| `hackforge-backend-policy.yaml` | ValidatingAdmissionPolicy. `hackforge-backend`는 `lab-` namespace만 생성·변경·삭제 가능, 실습 namespace 생성 시 label `hackforge/lab=true` 필수, RoleBinding은 역할 `hackforge-lab-log-reader`와 대상 `hackforge-backend`만 |
 | `lab-network-policy.yaml` | Calico GlobalNetworkPolicy. label `hackforge/lab=true`인 namespace의 Pod는 Ingress, Egress 모두 거절 |
 
 ```bash
@@ -358,6 +358,18 @@ kubectl get globalnetworkpolicies.projectcalico.org
 ```
 
 GlobalNetworkPolicy는 Calico API server(`projectcalico.org/v3`)로 적용한다. 4단계의 operator 설치에 API server가 포함돼 있다.
+
+백엔드는 실습 namespace를 만들 때 RoleBinding `lab-log-reader`를 같이 만들어 그 namespace의 Pod 로그만 읽는다(ADR 021). 백엔드 ClusterRole에는 `rolebindings` `create`와, `resourceNames`를 `hackforge-lab-log-reader` 하나로 좁힌 `clusterroles` `bind`가 있다. 적용한 뒤 8.3의 백엔드 kubeconfig로 다음을 확인한다.
+
+```bash
+B=~/.kube/<클러스터이름>-backend.yaml
+kubectl --kubeconfig $B auth can-i get pods --subresource=log -n kube-system    # no
+kubectl --kubeconfig $B auth can-i get pods --subresource=log -n lab-<세션 id>   # 진행 중 세션이 있으면 yes
+```
+
+`rolebindings` `create`는 RBAC로는 모든 namespace에 허용되므로(`auth can-i create rolebindings -n kube-system`이 `yes`) 실제로 막는 것은 admission policy다. 권한을 적용하기 전에 만든 실습 namespace에는 RoleBinding이 없어서 그 세션은 준비 단계가 `CONTAINER`에 머문다. 진행 중 세션을 끝낸 뒤 적용한다.
+
+admission policy의 CEL에서 RoleBinding `subjects`의 `namespace` 필드는 `object.subjects[0]['namespace']`처럼 대괄호로 읽는다. `namespace`는 CEL 예약어라 `.__namespace__`로 escape하라는 안내가 있지만, 이 필드에서는 `no such key: __namespace__` 오류로 모든 RoleBinding 생성이 거절됐다(2026-11-19 개발 클러스터).
 
 ### 8.3 백엔드용 kubeconfig
 
