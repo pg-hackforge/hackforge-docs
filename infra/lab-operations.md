@@ -173,6 +173,25 @@ PSQL="docker exec -i hackforge-be-postgres-1 psql -U hackforge" sh register.sh <
 - kubelet 디스크 집계는 바로 갱신되지 않는다. Ready 직후 510MiB로 보였다가 다음 갱신에 1555MiB가 됐다
 - `kubectl exec`가 0이 아닌 exit code로 끝나면 kubectl이 stderr에 `command terminated with exit code 1`을 덧붙인다. 결과 메시지는 stdout의 마지막 줄만 읽어야 한다(#9, #11)
 
+## 6. 공격 대상 port-forward와 터미널 exec 확인 (2026-11-20)
+
+ADR 022(공격 대상과 웹 터미널 연결)의 확인 작업이다. 개발 VM(2 vCPU, 4GB)에서 백엔드 API로 `sqli-login` 1.0.0 세션을 시작하고(`READY`까지 74초), 관리자 kubeconfig의 `kubectl`로 확인했다. 백엔드 권한(`hackforge-lab-connect`)은 아직 없어서 쓰지 않았다. 부하는 개발 PC에서 k6(v1.7.1)로 port-forward한 주소에 `GET /`를 보냈다.
+
+| 항목 | 결과 |
+|---|---|
+| exec | `sh -c` 실행 성공. 작업 폴더 `/app`, uid 0, `sh`는 busybox. `docker compose ps`로 `db`, `web` 모두 running, healthy |
+| exec TTY | `kubectl exec -t`는 PC 쪽 입력이 터미널이 아니면 TTY를 만들지 않아 확인하지 못함. 백엔드가 client-java로 TTY를 요청하는 것은 작업 5와 8에서 확인 |
+| port-forward | `kubectl port-forward pod/lab 18080:8080`으로 Pod 안 `127.0.0.1:8080`의 로그인 페이지가 열림(첫 요청 200, 4ms). NetworkPolicy와 GlobalNetworkPolicy는 그대로 |
+| 부하 1000개(동시 10) | 초당 609개, 실패 0. 응답 중앙값 1.5ms, p95 15.5ms, p99 181ms, 최대 1.17초(시작할 때 연결을 여는 몇 개) |
+| 부하 5000개(동시 10) | 초당 1669개, 실패 0. 응답 중앙값 3.2ms, p95 32ms, p99 40ms, 최대 51ms |
+| API server CPU | 부하 중 평균 0.20 core, 부하 없을 때 0.03 core(`process_cpu_seconds_total`) |
+| kubelet CPU | 부하 중 평균 약 0.04 core. kubelet 통계는 늦게 갱신돼서 부하 뒤 20초를 포함해 나눈 값이라 실제보다 낮게 나옴 |
+
+- port-forward와 exec 모두 Sysbox Pod(`hostUsers: false`)에서 동작한다. ADR 022의 경로를 그대로 쓴다
+- 초당 1600개를 넘는 요청도 실패 없이 지나가고 API server가 0.2 core 정도 더 쓴다. sqlmap 한 명은 보통 이보다 훨씬 적은 요청을 보내므로 30세션 기준에서 여유가 있다. ADR 022의 이전 기준(동시 100세션, API server가 실습 생성과 종료를 늦춤)은 운영 서버에서 다시 잰다
+- Pod 안에서 직접 요청하는 기준값은 busybox `date`가 나노초(`%N`)를 지원하지 않아 재지 못했다. 위 응답 시간에는 공격 대상 앱(PHP)의 처리 시간이 포함돼 있다
+- Git Bash에서 `kubectl`에 `/metrics`, `/app` 같은 인자를 넘길 때는 `MSYS_NO_PATHCONV=1`을 kubectl에만 붙인다. 전체에 켜면 `curl`의 cookie 파일 경로가 바뀌지 않아 로그인이 실패한다
+
 ## known issues
 
 | 증상 | 원인 | 조치 |
