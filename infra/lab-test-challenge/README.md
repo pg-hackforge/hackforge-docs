@@ -4,7 +4,7 @@
 
 | 파일 | 내용 |
 |---|---|
-| `Dockerfile` | `docker:dind` 위에 compose 파일, 서비스 이미지 tar, 시작 스크립트를 넣음 |
+| `Dockerfile` | `docker:dind` 위에 compose 파일과 그 원본 사본(`/hackforge/original/`, [ADR 024](../../decisions/024-방어-IDE-재배포-초기화.md)), 서비스 이미지 tar, 시작 스크립트를 넣음 |
 | `app/compose.yaml` | 서비스 정의. 이미지는 tar에서 load하므로 `pull_policy: never` |
 | `hackforge/entrypoint.sh` | inner dockerd 시작, `images.tar` load, `docker compose up -d`. 단계별 시각을 로그에 남김 |
 | `hackforge/ready.sh` | readinessProbe. compose 서비스가 모두 running이고 healthcheck가 있으면 healthy일 때 성공 |
@@ -22,7 +22,7 @@ sh infra/lab-test-challenge/build.sh 0.1.0
 
 ## 노드에 import
 
-registry 없이 노드의 containerd에 직접 넣는다. Pod는 `imagePullPolicy: IfNotPresent`로 이 이미지를 쓴다. 운영 서버에 넣는 방법은 미정(결정 필요)이고 운영 서버 구성 때 정한다.
+registry 없이 노드의 containerd에 직접 넣는다. 다시 빌드했으면 같은 tag로 다시 import하면 덮어쓴다(그 이미지로 실행 중인 Pod가 없을 때). Pod는 `imagePullPolicy: IfNotPresent`로 이 이미지를 쓴다. 운영 서버에 넣는 방법은 미정(결정 필요)이고 운영 서버 구성 때 정한다.
 
 ```bash
 scp infra/lab-test-challenge/lab-test-challenge-0.1.0.tar <user>@<NODE_IP>:~/
