@@ -27,8 +27,8 @@
 
 ## 작업
 
-- [ ] 1. [docs] ADR 025, 이 작업 목록, `data-model.md`(`verifications` 방어 컬럼, `lab_sessions.completed_at`, `solution_viewed_at`), product.md 유스케이스 6·예외 상황·개념 (확인: 사람이 정한 결정과 맞음)
-- [ ] 2. [be] `openapi.yaml` 0.8.0: 방어 검증 요청, 검증 응답 방어 필드, 해답 열기, 세션 응답(시도 횟수, 최대 횟수, 해답 열 수 있음, 해답 연 시각, 완료 시각), 오류 코드 (테스트: OpenAPI lint)
-- [ ] 3. [be] migration V12, 방어 검증 실행(두 스크립트, 판정, 메시지, 시도 횟수, 3분 복구), 해답 열기, 실습 완료와 완료 뒤 5분 종료, 세션 응답 (테스트: 가짜 클러스터로 PASS·보안 FAIL·기능 FAIL·둘 다 FAIL·시간 초과·exec 실패, 시도 횟수에 `ERROR` 제외, 해답 잠김 409와 최대 횟수 뒤 열기, `after_solution`, 첫 PASS만 완료 시각, 완료 뒤 5분 종료와 입력 뒤 30분 종료, 단계·상태·동시 실행 409, 활동)
-- [ ] 4. [be] clusterTest: 개발 클러스터의 실제 Pod에서 테스트용 스크립트로 방어 검증 FAIL → 터미널에서 고침 → PASS와 완료 시각 (테스트: `./gradlew clusterTest`)
-- [ ] 5. [be] Postman "9. 실습"에 방어 검증, 결과, 해답 요청. 개발 백엔드에서 실제 sqli-login으로 FAIL → 해답대로 고쳐 재배포 → PASS 확인(공격 문자열과 고친 코드는 PR에 적지 않음) (확인: newman)
+- [x] 1. [docs] ADR 025, 이 작업 목록, `data-model.md`(`verifications` 방어 컬럼, `lab_sessions.completed_at`, `solution_viewed_at`), product.md 유스케이스 6·예외 상황·개념 (확인: 사람이 정한 결정과 맞음)
+- [x] 2. [be] `openapi.yaml` 0.8.0: 방어 검증 요청, 검증 응답 방어 필드, 해답 열기, 세션 응답(시도 횟수, 최대 횟수, 해답 열 수 있음, 해답 연 시각, 완료 시각), 오류 코드 (테스트: OpenAPI lint)
+- [x] 3. [be] migration V12, 방어 검증 실행(두 스크립트, 판정, 메시지, 시도 횟수, 3분 복구), 해답 열기, 실습 완료와 완료 뒤 5분 종료, 세션 응답 (테스트: 가짜 클러스터로 PASS·보안 FAIL·기능 FAIL·둘 다 FAIL·시간 초과·exec 실패, 시도 횟수에 `ERROR` 제외, 해답 잠김 409와 최대 횟수 뒤 열기, `after_solution`, 첫 PASS만 완료 시각, 완료 뒤 5분 종료와 입력 뒤 30분 종료, 단계·상태·동시 실행 409, 활동)
+- [x] 4. [be] clusterTest: 개발 클러스터의 실제 Pod에서 테스트용 스크립트로 방어 검증 FAIL → 터미널에서 고침 → PASS와 완료 시각 (테스트: `./gradlew clusterTest`)
+- [x] 5. [be] Postman "9. 실습"에 방어 검증, 결과, 해답 요청. 개발 백엔드에서 실제 sqli-login으로 FAIL → 해답대로 고쳐 재배포 → PASS 확인(공격 문자열과 고친 코드는 PR에 적지 않음) (확인: newman)
