@@ -27,8 +27,8 @@
 
 ## 작업
 
-- [ ] 1. [docs] ADR 023, 이 작업 목록, `data-model.md`(`lab_sessions.stage`·`attack_skipped`, `verifications`, `lab_session_hints`), product.md 유스케이스 4와 LabSession 개념 (확인: 사람이 정한 결정과 맞음)
-- [ ] 2. [be] `openapi.yaml` 0.6.0: 공격 검증 요청·조회·목록, 힌트 공개·목록, 건너뛰기, 세션 응답의 `stage`·`attackSkipped`·공개한 공격 힌트 수, 새 오류 코드 (테스트: OpenAPI lint)
-- [ ] 3. [be] migration V10, `LabCluster.runScript`(exec stdin, timeout, exit code와 stdout), 검증 실행(응답 뒤 별도 thread)과 `RUNNING` 복구 (테스트: 가짜 클러스터로 PASS·FAIL·ERROR·60초 초과, 마지막 줄 추출, 동시 요청 하나만, 재시작 뒤 복구, `ATTACK` PASS만 단계 변경)
-- [ ] 4. [be] API: 공격 검증 요청·조회·목록, 힌트 공개·목록, 건너뛰기, 세션 응답 필드, 활동 기록 (테스트: 단계·상태별 허용과 409, 힌트 순서와 공개 시각, 다른 학습자 404, 활동 기록)
-- [ ] 5. [be] clusterTest: 개발 클러스터의 실제 Pod로 테스트용 공격 검증 스크립트(파일이 있으면 PASS)가 공격 전 FAIL, 터미널로 파일을 만든 뒤 PASS와 `DEFENSE` 전환 (테스트: `./gradlew clusterTest`)
+- [x] 1. [docs] ADR 023, 이 작업 목록, `data-model.md`(`lab_sessions.stage`·`attack_skipped`, `verifications`, `lab_session_hints`), product.md 유스케이스 4와 LabSession 개념 (확인: 사람이 정한 결정과 맞음)
+- [x] 2. [be] `openapi.yaml` 0.6.0: 공격 검증 요청·조회·목록, 힌트 공개·목록, 건너뛰기, 세션 응답의 `stage`·`attackSkipped`·공개한 공격 힌트 수, 새 오류 코드 (테스트: OpenAPI lint)
+- [x] 3. [be] migration V10, `LabCluster.runScript`(exec stdin, timeout, exit code와 stdout), 검증 실행(응답 뒤 별도 thread)과 `RUNNING` 복구 (테스트: 가짜 클러스터로 PASS·FAIL·ERROR·60초 초과, 마지막 줄 추출, 동시 요청 하나만, 재시작 뒤 복구, `ATTACK` PASS만 단계 변경)
+- [x] 4. [be] API: 공격 검증 요청·조회·목록, 힌트 공개·목록, 건너뛰기, 세션 응답 필드, 활동 기록 (테스트: 단계·상태별 허용과 409, 힌트 순서와 공개 시각, 다른 학습자 404, 활동 기록)
+- [x] 5. [be] clusterTest: 개발 클러스터의 실제 Pod로 테스트용 공격 검증 스크립트(파일이 있으면 PASS)가 공격 전 FAIL, 터미널로 파일을 만든 뒤 PASS와 `DEFENSE` 전환 (테스트: `./gradlew clusterTest`)

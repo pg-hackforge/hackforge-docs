@@ -30,9 +30,9 @@
 
 ## 작업
 
-- [ ] 1. [docs] ADR 024, 이 작업 목록, `data-model.md`(`challenges.readonly_paths`, `redeploys`), product.md 유스케이스 7 (확인: 사람이 정한 결정과 맞음)
-- [ ] 2. [be] `openapi.yaml` 0.7.0: 파일 목록·읽기·저장·되돌리기, 재배포 요청·조회·목록, 초기화, 방어 힌트, 세션 응답, 오류 코드 (테스트: OpenAPI lint)
-- [ ] 3. [challenge] `hackforge-challenge-template`: Dockerfile `COPY app/ /hackforge/original/`, `challenge.env` `READONLY`, `register.sh` 저장, README. `hackforge-challenge-sqli` 같은 변경과 다시 빌드. 테스트 문제(`infra/lab-test-challenge`) 원본 사본. 개발 클러스터 import와 개발 DB 등록 (확인: Pod 안 `/hackforge/original`에 원본, 등록된 `readonly_paths`)
-- [ ] 4. [be] migration V11, 파일 API(exec, base64, 해시, 수정 불가, 경로 확인) (테스트: 가짜 클러스터로 목록·읽기·저장·되돌리기, 해시 충돌 409, 수정 불가 403, 경로 400, 크기·바이너리, 단계·상태 409, 활동)
-- [ ] 5. [be] 재배포와 서비스 초기화 실행(비동기, 로그, 시작할 때와 시간 기준 복구. 검증에도 시작할 때 복구), 실습 환경 다시 만들기, 처음부터, 동시 실행 제한, 방어 힌트 (테스트: 성공·실패·시간 초과·exec 실패, 로그 64KB, 검증과 재배포 동시 409, 다시 만들기 뒤 `CREATING`, 처음부터의 단계, 방어 힌트 순서)
-- [ ] 6. [be] clusterTest: 개발 클러스터의 실제 Pod에서 파일을 고치고 재배포해 응답이 바뀌고, 서비스 초기화로 원본과 초기 DB로, 실습 환경 다시 만들기로 READY까지 (테스트: `./gradlew clusterTest`)
+- [x] 1. [docs] ADR 024, 이 작업 목록, `data-model.md`(`challenges.readonly_paths`, `redeploys`), product.md 유스케이스 7 (확인: 사람이 정한 결정과 맞음)
+- [x] 2. [be] `openapi.yaml` 0.7.0: 파일 목록·읽기·저장·되돌리기, 재배포 요청·조회·목록, 초기화, 방어 힌트, 세션 응답, 오류 코드 (테스트: OpenAPI lint)
+- [x] 3. [challenge] `hackforge-challenge-template`: Dockerfile `COPY app/ /hackforge/original/`, `challenge.env` `READONLY`, `register.sh` 저장, README. `hackforge-challenge-sqli` 같은 변경과 다시 빌드. 테스트 문제(`infra/lab-test-challenge`) 원본 사본. 개발 클러스터 import와 개발 DB 등록 (확인: Pod 안 `/hackforge/original`에 원본, 등록된 `readonly_paths`)
+- [x] 4. [be] migration V11, 파일 API(exec, base64, 해시, 수정 불가, 경로 확인) (테스트: 가짜 클러스터로 목록·읽기·저장·되돌리기, 해시 충돌 409, 수정 불가 403, 경로 400, 크기·바이너리, 단계·상태 409, 활동)
+- [x] 5. [be] 재배포와 서비스 초기화 실행(비동기, 로그, 시작할 때와 시간 기준 복구. 검증에도 시작할 때 복구), 실습 환경 다시 만들기, 처음부터, 동시 실행 제한, 방어 힌트 (테스트: 성공·실패·시간 초과·exec 실패, 로그 64KB, 검증과 재배포 동시 409, 다시 만들기 뒤 `CREATING`, 처음부터의 단계, 방어 힌트 순서)
+- [x] 6. [be] clusterTest: 개발 클러스터의 실제 Pod에서 파일을 고치고 재배포해 응답이 바뀌고, 서비스 초기화로 원본과 초기 DB로, 실습 환경 다시 만들기로 READY까지 (테스트: `./gradlew clusterTest`)
