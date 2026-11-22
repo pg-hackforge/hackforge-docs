@@ -24,7 +24,7 @@
 
 ## 작업
 
-- [ ] 1. [docs] ADR 026, 이 작업 목록, `data-model.md`(`session_events`, 종료 사유 `ADMIN`), product.md 유스케이스(내 실습 기록) (확인: 사람이 정한 결정과 맞음)
-- [ ] 2. [be] `openapi.yaml` 0.9.0: 학습자 세션 목록, 상태 기록, 해답 다시 보기, 관리자 세션 목록·강제 종료, 조회 API의 관리자 허용, 종료 사유 `ADMIN` (테스트: OpenAPI lint)
-- [ ] 3. [be] migration V13(`session_events`, trigger, 종료 사유 `ADMIN`), 요청마다 주체 기록, 학습자 세션 목록, 상태 기록·해답 다시 보기, 관리자 세션 목록·강제 종료, 조회 API의 관리자 허용 (테스트: 상태 변경마다 기록과 주체(학습자 시작·종료, 관리자 종료, reconciler는 시스템), 목록 필터·페이지·순서, 강제 종료 `ADMIN`과 이미 끝난 세션, 관리자 아님 403, 관리자의 남의 세션 조회는 되고 변경은 404, 해답 다시 보기, Postman)
-- [ ] 4. [infra] 개발 클러스터에 Prometheus·Grafana 가벼운 설치(Alertmanager 없음, 30초, 7일, local-path-provisioner 기본 StorageClass와 PVC. `cluster-setup.md`에 local-path-provisioner 절차), 실습 namespace별 CPU·메모리 대시보드, `infra/monitoring.md` runbook과 자원 사용량 측정 (확인: Grafana에서 실습 세션 하나의 CPU·메모리가 보이고 Prometheus·Grafana 메모리 실측)
+- [x] 1. [docs] ADR 026, 이 작업 목록, `data-model.md`(`session_events`, 종료 사유 `ADMIN`), product.md 유스케이스(내 실습 기록) (확인: 사람이 정한 결정과 맞음)
+- [x] 2. [be] `openapi.yaml` 0.9.0: 학습자 세션 목록, 상태 기록, 해답 다시 보기, 관리자 세션 목록·강제 종료, 조회 API의 관리자 허용, 종료 사유 `ADMIN` (테스트: OpenAPI lint)
+- [x] 3. [be] migration V13(`session_events`, trigger, 종료 사유 `ADMIN`), 요청마다 주체 기록, 학습자 세션 목록, 상태 기록·해답 다시 보기, 관리자 세션 목록·강제 종료, 조회 API의 관리자 허용 (테스트: 상태 변경마다 기록과 주체(학습자 시작·종료, 관리자 종료, reconciler는 시스템), 목록 필터·페이지·순서, 강제 종료 `ADMIN`과 이미 끝난 세션, 관리자 아님 403, 관리자의 남의 세션 조회는 되고 변경은 404, 해답 다시 보기, Postman)
+- [x] 4. [infra] 개발 클러스터에 Prometheus·Grafana 가벼운 설치(Alertmanager 없음, 30초, 7일, local-path-provisioner 기본 StorageClass와 PVC. `cluster-setup.md`에 local-path-provisioner 절차), 실습 namespace별 CPU·메모리 대시보드, `infra/monitoring.md` runbook과 자원 사용량 측정 (확인: Grafana에서 실습 세션 하나의 CPU·메모리가 보이고 Prometheus·Grafana 메모리 실측)
