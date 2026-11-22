@@ -1,0 +1,87 @@
+# kube-prometheus-stack 92.22.0 가벼운 구성(ADR 026). 설치 절차는 infra/monitoring.md
+# Alertmanager 없음, 수집 30초, 보존 7일, 저장은 기본 StorageClass(local-path)의 PVC
+
+alertmanager:
+  enabled: false
+
+# kubeadm은 etcd, scheduler, controller-manager, kube-proxy 지표를 127.0.0.1에만 열어 수집하지 못한다(target down만 남음)
+kubeEtcd:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeProxy:
+  enabled: false
+
+prometheus:
+  prometheusSpec:
+    scrapeInterval: 30s
+    evaluationInterval: 30s
+    retention: 7d
+    retentionSize: 4GB
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        memory: 1Gi
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: [ReadWriteOnce]
+          resources:
+            requests:
+              storage: 5Gi
+
+prometheusOperator:
+  resources:
+    requests:
+      cpu: 20m
+      memory: 32Mi
+    limits:
+      memory: 128Mi
+
+grafana:
+  # 관리자 계정은 설치 전에 만든 Secret grafana-admin(admin-user, admin-password)에서 읽는다. 값은 저장소에 두지 않는다
+  admin:
+    existingSecret: grafana-admin
+  # 대시보드는 차트가 ConfigMap으로 넣는다. 화면에서 바꾼 설정은 Pod가 다시 뜨면 사라진다
+  persistence:
+    enabled: false
+  service:
+    type: ClusterIP
+  # Alertmanager를 설치하지 않으므로 데이터 원본에서도 뺀다
+  sidecar:
+    datasources:
+      alertmanager:
+        enabled: false
+  # 256Mi로는 시작 직후 대시보드를 넣는 동안 한도에 닿아 CPU를 계속 썼다(2026-11-22 개발 클러스터)
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
+  grafana.ini:
+    users:
+      allow_sign_up: false
+    analytics:
+      reporting_enabled: false
+      check_for_updates: false
+
+kube-state-metrics:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 128Mi
+
+prometheus-node-exporter:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 24Mi
+    limits:
+      memory: 64Mi

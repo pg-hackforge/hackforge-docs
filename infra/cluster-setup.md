@@ -439,6 +439,21 @@ $B delete namespace lab-check
 
 `$B delete namespace`는 삭제 완료를 기다리면서 `cannot watch resource "namespaces"` 오류를 출력하는데, 백엔드 권한에 watch가 없어서 나는 것이고 삭제는 정상적으로 된다.
 
+## 9. 저장 공간 자동 할당 (local-path-provisioner)
+
+Prometheus(#13 관리와 기록) 같은 앱이 PVC를 내면 노드 디스크에 PV를 자동으로 만들어 주는 provisioner다([ADR 026](../decisions/026-관리와-기록.md)). 기본 StorageClass로 지정해 두면 Helm 차트가 따로 설정 없이 PVC를 받는다. 실습 Pod는 쓰지 않는다(임시 저장소만 씀).
+
+```bash
+K="kubectl --kubeconfig ~/.kube/<클러스터이름>.yaml"
+$K apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.37/deploy/local-path-storage.yaml
+$K patch storageclass local-path -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+$K -n local-path-storage rollout status deploy/local-path-provisioner
+$K get storageclass   # local-path (default)
+```
+
+- 데이터는 노드의 `/opt/local-path-provisioner/` 아래 PVC마다 폴더로 남음. 노드 디스크라 백업이나 이중화는 아님
+- PVC를 지우면 그 폴더도 지움(`Delete`). PVC는 Pod가 처음 쓸 때 만들어짐(`WaitForFirstConsumer`)
+
 ## 방화벽
 
 개발 VM에서는 방화벽을 켜지 않아서 이 섹션은 테스트하지 않았고, 운영 서버에서 확인 후 고친다. Ubuntu Server는 기본으로 `ufw`가 꺼져 있다. 켤 경우 single node에서 외부 inbound가 필요한 건 SSH(22)와 API server(6443, 관리 PC만)이고, 노드를 늘리면 노드 간 10250(kubelet), 4789/udp(Calico VXLAN), 5473(Calico Typha)도 연다. 실습 대상 앱과 IDE를 외부에 노출하는 방식은 #8·#10에서 정한다.
