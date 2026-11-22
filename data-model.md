@@ -14,7 +14,7 @@ erDiagram
     lab_sessions ||--o{ verifications : "검증 (V10)"
     lab_sessions ||--o{ lab_session_hints : "공개한 힌트 (V10)"
     lab_sessions ||--o{ redeploys : "재배포·초기화 (V11)"
-    lab_sessions ||--o{ session_events : "계획"
+    lab_sessions ||--o{ session_events : "상태 기록 (계획 V13)"
 
     users {
         bigint id PK
@@ -80,11 +80,11 @@ erDiagram
 | `challenges` | 구현됨 (be migration V4, V7, V8, V11) | [ADR 012](decisions/012-실습-환경-수명-주기.md), [ADR 014](decisions/014-challenge-형식과-등록.md), [ADR 020](decisions/020-문제-정보와-목록-API.md) |
 | `challenge_categories` | 구현됨 (be migration V8) | [ADR 020](decisions/020-문제-정보와-목록-API.md) |
 | `challenge_hints` | 구현됨 (be migration V7) | [ADR 014](decisions/014-challenge-형식과-등록.md) |
-| `lab_sessions` | 구현됨 (be migration V5, V6, V9, V10). `completed_at`, `solution_viewed_at`은 계획 (V12) | [ADR 012](decisions/012-실습-환경-수명-주기.md), [ADR 021](decisions/021-실습-환경-준비-단계.md), [ADR 023](decisions/023-공격-검증과-힌트.md), [ADR 025](decisions/025-방어-검증과-해답.md) |
-| `verifications` | 구현됨 (be migration V10). 방어 검증 컬럼(보안·기능 통과 여부와 메시지, 본 방어 힌트 수, 해답 확인 후 여부)은 계획 (V12) | [ADR 023](decisions/023-공격-검증과-힌트.md), [ADR 025](decisions/025-방어-검증과-해답.md) |
+| `lab_sessions` | 구현됨 (be migration V5, V6, V9, V10, V12) | [ADR 012](decisions/012-실습-환경-수명-주기.md), [ADR 021](decisions/021-실습-환경-준비-단계.md), [ADR 023](decisions/023-공격-검증과-힌트.md), [ADR 025](decisions/025-방어-검증과-해답.md) |
+| `verifications` | 구현됨 (be migration V10, V12). V12는 방어 검증 컬럼(보안·기능 통과 여부와 메시지, 본 방어 힌트 수, 해답 확인 후 여부) | [ADR 023](decisions/023-공격-검증과-힌트.md), [ADR 025](decisions/025-방어-검증과-해답.md) |
 | `lab_session_hints` | 구현됨 (be migration V10) | [ADR 023](decisions/023-공격-검증과-힌트.md) |
 | `redeploys` | 구현됨 (be migration V11). 재배포와 서비스 초기화 기록, 빌드 로그 끝 64KB | [ADR 024](decisions/024-방어-IDE-재배포-초기화.md) |
-| `session_events` | 계획. product.md의 SessionEvent | #13 관리와 기록 |
+| `session_events` | 계획 (V13). 세션 상태가 바뀔 때마다 trigger가 이전·다음 상태, 주체(`LEARNER`, `ADMIN`, `SYSTEM`)와 주체 사용자, 시각을 남김. 종료 사유 `ADMIN`도 V13 | [ADR 026](decisions/026-관리와-기록.md) |
 
 - `spring_session.principal_name`은 `users.id`를 문자열로 담지만 FK가 아님. 역할 변경, 임시 비밀번호 발급, 탈퇴 때 앱이나 runbook이 직접 지움
 - `lab_sessions.user_id`는 `ON DELETE CASCADE`, `lab_sessions.challenge_id`는 `ON DELETE RESTRICT`
