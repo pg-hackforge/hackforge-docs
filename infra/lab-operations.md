@@ -132,6 +132,8 @@ $K get pod lab -n lab-A -o jsonpath='{.status.reason} {.status.message}'
 
 형식과 스크립트는 [ADR 014](../decisions/014-challenge-형식과-등록.md)와 각 문제 저장소 README에 있다. 순서는 빌드, 노드 import, 등록이다. import 전에 등록하면 그 사이 시작한 세션이 이미지를 찾지 못해 `FAILED`가 된다.
 
+진행 중 세션이 있는 문제는 다시 등록하지 않는다. 세션은 이미지만 시작할 때 고정하고 검증 스크립트, 힌트, 해답은 검증할 때마다 `challenges`에서 읽으므로, 그 세션이 옛 이미지와 새 스크립트로 검증받는다([ADR 031](../decisions/031-문제-상태와-버전.md), v1.2 버전 분리로 해결). 등록 전에 1절의 진행 중 세션에서 그 문제를 확인한다.
+
 ```bash
 # 관리 PC, 문제 저장소에서
 sh build.sh <TAG>                    # challenge-<SLUG>-<TAG>.tar
@@ -169,7 +171,7 @@ PSQL="docker exec -i hackforge-be-postgres-1 psql -U hackforge" sh register.sh <
 
 - 메모리 512Mi 안에서 동작한다. limit에 닿는 것은 page cache라 회수되고, 재빌드 뒤에도 OOM은 없었다(ADR 014의 실측 항목)
 - 디스크는 시작 직후부터 2Gi의 약 76%를 쓴다. 재빌드는 base 위 `COPY` 계층만 늘어서 거의 늘지 않는다. 이미지가 더 큰 문제를 추가하면 여유가 부족할 수 있다
-- 미정(결정 필요): 디스크 2Gi를 유지하고 문제 이미지 크기에 상한을 둘지, 실습 Pod 디스크를 늘릴지. 다음 문제를 만들 때 정함
+- 디스크는 2Gi를 유지하고, 문제 이미지 묶음(`images.tar`)은 첫 문제 수준인 450MB 이하로 둔다(2026-11-26 사람이 결정)
 - kubelet 디스크 집계는 바로 갱신되지 않는다. Ready 직후 510MiB로 보였다가 다음 갱신에 1555MiB가 됐다
 - `kubectl exec`가 0이 아닌 exit code로 끝나면 kubectl이 stderr에 `command terminated with exit code 1`을 덧붙인다. 결과 메시지는 stdout의 마지막 줄만 읽어야 한다(#9, #11)
 
