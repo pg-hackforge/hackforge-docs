@@ -6,19 +6,22 @@
 
 ## v1 (2026년 12월 초)
 
+12월 초는 시연 날짜이고, 운영 서버 배포는 v1 뒤에 한다(2026-11-27 사람이 결정). 시연 전용 코드나 경로는 두지 않고 운영 기준으로 만든다.
+
 계정, 문제 목록, 실습 환경, 공격 대상과 웹 터미널, 공격 검증과 힌트, 방어 IDE와 재배포, 방어 검증과 해답, 관리와 기록, fe 화면 전체, 소개 화면은 끝났다. 남은 것은 이 순서로 한다.
 
 1. 문제 상태(예정, 공개)와 분류 추가: [ADR 031](decisions/031-문제-상태와-버전.md) v1, [ADR 032](decisions/032-분류-추가.md), [specs/more-challenges](specs/more-challenges/tasks.md) 작업 1~5
 2. 문제 2 `idor-memo`, 문제 3 `cmdi-ping`과 개발 VM 측정: specs/more-challenges 작업 6~8
-3. 배포 준비. 미정(결정 필요): 운영 서버 사양, 학교 규칙, 공유기 NAT와 hairpin NAT, 운영 시작 날짜, 백엔드와 DB를 클러스터 안에 둘지, reverse proxy, 노드 이미지 import, 배포 방법, DB 백업, 첫 관리자 계정
+3. 공지와 점검 안내(2026-11-27 사람이 결정). 설계와 작업 목록은 따로 만든다
 4. hackforge-be #60(READY 직후 첫 exec 연결이 가끔 끊김) 원인 조사
 
 ## v1.1
 
-- hackforge-docs #18 이메일 인증과 비밀번호 재설정
+- 배포 준비(v1에서 옮김, 2026-11-27 사람이 결정). 미정(결정 필요): 운영 서버 사양, 학교 규칙, 공유기 NAT와 hairpin NAT, 운영 시작 날짜, 백엔드와 DB를 클러스터 안에 둘지, reverse proxy, 노드 이미지 import, 배포 방법, DB 백업, 첫 관리자 계정
+- hackforge-docs #74 운영 HTTPS와 도메인
+- hackforge-docs #18 이메일 인증과 비밀번호 재설정. 메일 발송에 도메인이 필요해 #74 도메인 뒤에 한다(2026-11-27 사람이 결정). 미정(결정 필요): 발송 서비스(추천은 Resend, 백엔드는 표준 SMTP로 보냄), 발송 대기열(outbox)과 반송 웹훅을 넣을지
 - hackforge-docs #60 계정 정지
 - hackforge-docs #61 본인 탈퇴
-- hackforge-docs #74 운영 HTTPS와 도메인
 - 학습자 로컬에서 접속하는 HTTPS tunnel CLI([ADR 004](decisions/004-로컬-연결-방식.md))
 - 관리자 세션 하나 조회 API `GET /api/admin/labs/{id}`(주소로 바로 연 오래된 세션의 학습자 표시, 2026-11-25 사람이 결정)
 
