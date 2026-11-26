@@ -12,12 +12,15 @@
 
 1. 문제 상태(예정, 공개)와 분류 추가: [ADR 031](decisions/031-문제-상태와-버전.md) v1, [ADR 032](decisions/032-분류-추가.md), [specs/more-challenges](specs/more-challenges/tasks.md) 작업 1~5
 2. 문제 2 `idor-memo`, 문제 3 `cmdi-ping`과 개발 VM 측정: specs/more-challenges 작업 6~8
-3. 공지와 점검 안내(2026-11-27 사람이 결정). 설계와 작업 목록은 따로 만든다
-4. hackforge-be #60(READY 직후 첫 exec 연결이 가끔 끊김) 원인 조사
+3. hackforge-docs #94 실습 세션 운영 관리(일괄 종료, 종료 안내, 관리자 세션 보기와 학습자 수락 뒤 조작): [ADR 033](decisions/033-실습-세션-운영-관리.md), [specs/lab-admin](specs/lab-admin/tasks.md)
+4. hackforge-docs #95 공지와 점검 안내: [ADR 034](decisions/034-공지와-점검.md), [specs/notices](specs/notices/tasks.md). 점검 자동 종료가 #94의 일괄 종료를 씀
+5. hackforge-be #60(READY 직후 첫 exec 연결이 가끔 끊김) 원인 조사
 
 ## v1.1
 
 - 배포 준비(v1에서 옮김, 2026-11-27 사람이 결정). 미정(결정 필요): 운영 서버 사양, 학교 규칙, 공유기 NAT와 hairpin NAT, 운영 시작 날짜, 백엔드와 DB를 클러스터 안에 둘지, reverse proxy, 노드 이미지 import, 배포 방법, DB 백업, 첫 관리자 계정
+- 이용약관과 개인정보 처리방침(배포 준비에 포함, 2026-11-27 사람이 결정). 실제 사용자를 받기 전에 필요하고 관리자 열람과 수락 뒤 조작(ADR 033)을 고지함
+- 백엔드가 꺼진 배포 중 점검 화면(reverse proxy 고정 페이지, ADR 034)
 - hackforge-docs #74 운영 HTTPS와 도메인
 - hackforge-docs #18 이메일 인증과 비밀번호 재설정. 메일 발송에 도메인이 필요해 #74 도메인 뒤에 한다(2026-11-27 사람이 결정). 미정(결정 필요): 발송 서비스(추천은 Resend, 백엔드는 표준 SMTP로 보냄), 발송 대기열(outbox)과 반송 웹훅을 넣을지
 - hackforge-docs #60 계정 정지
@@ -33,6 +36,7 @@
 
 ## 그 뒤
 
+- 나중에 하기로 한 운영 기능: 학습자에게 메시지 보내기(ADR 033), 공지 읽음 표시, 점검 기록 공개 페이지, SSE, 공지 고친 내용 전체 이력, 점검 예고 메일(#18 뒤, ADR 034)
 - 30명 규모 운영(multi node, 생성 대기열, 백엔드 다중 인스턴스, 부하 테스트). 지금은 설계만 함
 - 문제 등록 파이프라인(업로드 → CI 빌드·SBOM·취약점 스캔 → registry). ADR 031 D와의 관계는 미정
 
