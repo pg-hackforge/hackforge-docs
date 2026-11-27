@@ -34,7 +34,8 @@ erDiagram
         bigint id PK
         varchar slug UK
         varchar title
-        varchar image
+        varchar status "PLANNED, PUBLISHED"
+        varchar image "예정이면 null"
         text description
         text attack_check
         text exploit
@@ -44,7 +45,8 @@ erDiagram
         varchar difficulty "INTRO, BEGINNER, INTERMEDIATE, ADVANCED"
         smallint estimated_minutes
         varchar summary "80자"
-        timestamptz created_at "NEW 판단"
+        timestamptz created_at "처음 등록"
+        timestamptz published_at "처음 공개, NEW 판단"
     }
     challenge_categories {
         varchar key PK
@@ -77,8 +79,8 @@ erDiagram
 |---|---|---|
 | `users` | 구현됨 (be migration V2, V3) | [ADR 011](decisions/011-계정-규칙.md) |
 | `spring_session`, `spring_session_attributes` | 구현됨 (be migration V1) | [ADR 002](decisions/002-인증-방식.md), [ADR 010](decisions/010-db-postgresql-flyway.md) |
-| `challenges` | 구현됨 (be migration V4, V7, V8, V11) | [ADR 012](decisions/012-실습-환경-수명-주기.md), [ADR 014](decisions/014-challenge-형식과-등록.md), [ADR 020](decisions/020-문제-정보와-목록-API.md) |
-| `challenge_categories` | 구현됨 (be migration V8) | [ADR 020](decisions/020-문제-정보와-목록-API.md) |
+| `challenges` | 구현됨 (be migration V4, V7, V8, V11, V14). V14는 문제 상태(예정, 공개), 처음 공개 시각, 예정 문제 18개 | [ADR 012](decisions/012-실습-환경-수명-주기.md), [ADR 014](decisions/014-challenge-형식과-등록.md), [ADR 020](decisions/020-문제-정보와-목록-API.md), [ADR 031](decisions/031-문제-상태와-버전.md) |
+| `challenge_categories` | 구현됨 (be migration V8, V14). V14는 분류 5개와 17개 표시 순서 | [ADR 020](decisions/020-문제-정보와-목록-API.md), [ADR 032](decisions/032-분류-추가.md) |
 | `challenge_hints` | 구현됨 (be migration V7) | [ADR 014](decisions/014-challenge-형식과-등록.md) |
 | `lab_sessions` | 구현됨 (be migration V5, V6, V9, V10, V12, V13). V13은 종료 사유 `ADMIN` | [ADR 012](decisions/012-실습-환경-수명-주기.md), [ADR 021](decisions/021-실습-환경-준비-단계.md), [ADR 023](decisions/023-공격-검증과-힌트.md), [ADR 025](decisions/025-방어-검증과-해답.md) |
 | `verifications` | 구현됨 (be migration V10, V12). V12는 방어 검증 컬럼(보안·기능 통과 여부와 메시지, 본 방어 힌트 수, 해답 확인 후 여부) | [ADR 023](decisions/023-공격-검증과-힌트.md), [ADR 025](decisions/025-방어-검증과-해답.md) |
@@ -90,6 +92,7 @@ erDiagram
 - `lab_sessions.user_id`는 `ON DELETE CASCADE`, `lab_sessions.challenge_id`는 `ON DELETE RESTRICT`
 - `challenge_hints.challenge_id`는 `ON DELETE CASCADE`. 문제마다 공격 힌트 3개, 방어 힌트 3개
 - `challenges.category_key`는 `ON DELETE RESTRICT`. 분류는 migration으로만 더하거나 바꿈
+- 예정(`PLANNED`) 문제는 이미지, 설명, 해답, 검증 스크립트, 방어 시도 횟수가 비어 있음. 공개(`PUBLISHED`)면 이 칸과 `published_at`이 모두 있어야 함(CHECK `challenges_published_complete`). 힌트 6개는 `register.sh`가 지킴
 - 계획인 테이블의 이름과 관계는 product.md 개념에서 옮긴 것이고, 그 이슈를 설계할 때 정함
 - product.md의 LabSession 개념 중 공개한 힌트는 `lab_session_hints`(힌트마다 공개 시각), 공격 건너뜀 여부는 `lab_sessions.attack_skipped`(ADR 023). 방어 검증 시도 횟수는 #11에서 정함
 - `verifications`, `lab_session_hints`의 `session_id`는 `ON DELETE CASCADE`. `verifications`는 세션마다 `RUNNING` 하나만(partial unique index)
