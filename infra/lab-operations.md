@@ -6,6 +6,7 @@
 - 클러스터 정책 적용: [cluster-setup.md](cluster-setup.md) 8단계
 - 기준: hackforge-be #31(실습 idle 종료와 활동 기록 API)까지. Pod spec이나 reconciler 동작이 바뀌면 같은 PR에서 이 문서도 고친다.
 - 문제 등록과 첫 문제 측정(4, 5절): [ADR 014](../decisions/014-challenge-형식과-등록.md), 2026-11-16
+- 문제 2·3 측정(7절): [specs/more-challenges](../specs/more-challenges/tasks.md) 작업 8, 2026-11-28
 
 ## placeholder
 
@@ -193,6 +194,38 @@ ADR 022(공격 대상과 웹 터미널 연결)의 확인 작업이다. 개발 VM
 - 초당 1600개를 넘는 요청도 실패 없이 지나가고 API server가 0.2 core 정도 더 쓴다. sqlmap 한 명은 보통 이보다 훨씬 적은 요청을 보내므로 30세션 기준에서 여유가 있다. ADR 022의 이전 기준(동시 100세션, API server가 실습 생성과 종료를 늦춤)은 운영 서버에서 다시 잰다
 - Pod 안에서 직접 요청하는 기준값은 busybox `date`가 나노초(`%N`)를 지원하지 않아 재지 못했다. 위 응답 시간에는 공격 대상 앱(PHP)의 처리 시간이 포함돼 있다
 - Git Bash에서 `kubectl`에 `/metrics`, `/app` 같은 인자를 넘길 때는 `MSYS_NO_PATHCONV=1`을 kubectl에만 붙인다. 전체에 켜면 `curl`의 cookie 파일 경로가 바뀌지 않아 로그인이 실패한다
+
+## 7. 문제 2·3(`idor-memo`, `cmdi-ping`) 측정 (2026-11-28)
+
+개발 VM(2 vCPU, 4GB)에서 두 문제를 `main`에서 `build.sh 1.0.0`으로 빌드해 4절 순서대로 import하고 `register.sh 1.0.0`으로 등록했다. 두 문제 모두 예정에서 공개로 바뀌고 `published_at`이 등록 시각으로 채워졌다. Pod 자원은 5절과 같다(CPU 500m, 메모리 512Mi, 디스크 2Gi).
+
+5절과 달리 검증과 수정을 모두 학습자와 같은 백엔드 API로 했다. 승인된 학습자 계정으로 세션을 시작하고 공격 검증, 방어 검증, 파일 저장(`PUT /api/labs/{id}/files/content`), 재배포 API를 차례로 불렀다. 공격만 학습자 터미널 대신 관리자 kubeconfig의 `kubectl exec`로 Pod 안에서 해답(`solution.md`)의 공격 명령을 실행했다. `idor-memo`는 같은 순서로 두 번(세션 77, 79), `cmdi-ping`은 한 번(세션 78) 쟀다.
+
+| 항목 | `idor-memo` | `cmdi-ping` |
+|---|---|---|
+| `images.tar` / Challenge 이미지 tar | 61MiB / 191MiB | 21MiB / 152MiB |
+| API 요청 → `READY` | 17초, 18초 | 18초 |
+| 준비 단계가 처음 보인 시각 | `CONTAINER` 2초, `LOADING` 8초, `STARTING` 14초 | `CONTAINER` 1초, `LOADING` 9초, `STARTING` 12초 |
+| Pod 로그 단계 | dockerd 준비 4초, 이미지 load 6초, compose up 1초 | dockerd 준비 6초, 이미지 load 3초, compose up 1초 |
+| CPU(`READY`까지) | 사용 5.3초 중 throttle 3.9초 | 사용 5.7초 중 throttle 3.7초 |
+| 메모리 peak | 179MiB, 309MiB. anon 52~72MiB. OOM 0 | 217MiB. anon 82~90MiB. OOM 0 |
+| inner container 메모리 | `web` 20~79MiB | `web` 48~51MiB |
+| 디스크(kubelet 집계, 60초 동안 최대) | 182MiB / 2Gi. inner docker 이미지 176MB | 68MiB / 2Gi. inner docker 이미지 60MB |
+| 종료 요청 → `DELETED` | 48초 | 46초 |
+
+| 순서 | 요청 | `idor-memo` | `cmdi-ping` |
+|---|---|---|---|
+| 1 | 공격 검증(공격 전) | `FAIL` 다른 회원의 메모를 읽은 기록 없음, 0.3~0.5초 | `FAIL` 관리자 토큰이 드러난 기록 없음, 0.3초 |
+| 2 | Pod 안에서 해답의 공격 명령 | `admin`의 1번 메모 응답 | 진단 결과에 토큰 `HF-...` |
+| 3 | 공격 검증 | `PASS` 다른 회원의 메모를 읽음 (1회). 단계 `DEFENSE` | `PASS` 관리자 토큰이 진단 결과에 드러남 (1건). 단계 `DEFENSE` |
+| 4 | 방어 검증(원본 그대로) | `FAIL` 요청 8개 중 8개가 아직 통함, 정상 기능 통과, 4초 | `FAIL` payload 4개 중 4개가 토큰을 드러냄, 정상 기능 통과, 11초 |
+| 5 | 해답대로 파일 저장, 재배포 | `web/src/memos.js`, 재배포 `SUCCESS` 14초 | `web/src/app.py`, 재배포 `SUCCESS` 4.5초 |
+| 6 | 방어 검증 | `PASS` 요청 8개 모두 막힘, 정상 기능 통과, 4초. `completedAt` 기록 | `PASS` payload 4개 모두 막힘, 정상 기능 통과, 1.4초. `completedAt` 기록 |
+
+- 두 문제 모두 메모리 512Mi, 디스크 2Gi, `images.tar` 450MB 기준 안에서 동작한다. 메모리 peak의 대부분은 회수되는 page cache이고 anon은 90MiB를 넘지 않았다. 재배포 뒤에도 OOM은 없었다
+- 공개 이미지가 작아서(`sqli-login`은 MySQL 이미지 포함 1.32GB) `READY`까지 `sqli-login`(71초)의 4분의 1 정도다
+- `cmdi-ping` 방어 검증이 원본에서 11초 걸린 것은 payload마다 ping을 실제로 보내기 때문이다. 60초 제한 안이다
+- `idor-memo` 해답의 공격 명령은 그대로 실행하면 실패했다. busybox `wget`이 로그인 뒤 redirect를 따라가며 로그인 요청을 되풀이해서 `Set-Cookie` 줄이 8개 나오고, 그 8줄이 `Cookie` header에 들어갔다. `exploit.sh`처럼 첫 줄만 쓰게 고쳤다(hackforge-challenge-idor-memo #2). 해답은 등록할 때 DB에 들어가므로 머지 뒤 다시 등록한다
 
 ## known issues
 
