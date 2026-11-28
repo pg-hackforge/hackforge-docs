@@ -12,7 +12,7 @@
 
 1. 문제 상태(예정, 공개)와 분류 추가: [ADR 031](decisions/031-문제-상태와-버전.md) v1, [ADR 032](decisions/032-분류-추가.md), [specs/more-challenges](specs/more-challenges/tasks.md) 작업 1~5
 2. 문제 2 `idor-memo`, 문제 3 `cmdi-ping`과 개발 VM 측정: specs/more-challenges 작업 6~8, [운영 runbook](infra/lab-operations.md) 7절
-3. hackforge-be #60(exec가 가끔 연결 오류로 끝남) 원인 조사와 수정: hackforge-be #75. READY와는 상관없었고, 검증 스크립트 끝에 붙이던 `exit`가 원인이었다([운영 runbook](infra/lab-operations.md) known issues)
+3. hackforge-be #60(exec가 가끔 연결 오류로 끝남) 원인 조사와 수정: hackforge-be #75, #76. READY와는 상관없었고, 검증 스크립트 끝에 붙이던 `exit`와 client-java가 exit code를 덮어쓰는 동작이 원인이었다([운영 runbook](infra/lab-operations.md) known issues)
 
 ## v1.1
 
