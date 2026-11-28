@@ -8,11 +8,11 @@
 
 12월 초는 시연 날짜이고, 운영 서버 배포는 v1 뒤에 한다(2026-11-27 사람이 결정). 시연 전용 코드나 경로는 두지 않고 운영 기준으로 만든다.
 
-계정, 문제 목록, 실습 환경, 공격 대상과 웹 터미널, 공격 검증과 힌트, 방어 IDE와 재배포, 방어 검증과 해답, 관리와 기록, fe 화면 전체, 소개 화면은 끝났다. 남은 것은 이 순서로 한다.
+계정, 문제 목록, 실습 환경, 공격 대상과 웹 터미널, 공격 검증과 힌트, 방어 IDE와 재배포, 방어 검증과 해답, 관리와 기록, fe 화면 전체, 소개 화면은 끝났다. 마지막으로 한 아래 세 가지도 끝나서(2026-11-28) v1에 남은 작업은 없다.
 
 1. 문제 상태(예정, 공개)와 분류 추가: [ADR 031](decisions/031-문제-상태와-버전.md) v1, [ADR 032](decisions/032-분류-추가.md), [specs/more-challenges](specs/more-challenges/tasks.md) 작업 1~5
-2. 문제 2 `idor-memo`, 문제 3 `cmdi-ping`과 개발 VM 측정: specs/more-challenges 작업 6~8
-3. hackforge-be #60(READY 직후 첫 exec 연결이 가끔 끊김) 원인 조사
+2. 문제 2 `idor-memo`, 문제 3 `cmdi-ping`과 개발 VM 측정: specs/more-challenges 작업 6~8, [운영 runbook](infra/lab-operations.md) 7절
+3. hackforge-be #60(exec가 가끔 연결 오류로 끝남) 원인 조사와 수정: hackforge-be #75. READY와는 상관없었고, 검증 스크립트 끝에 붙이던 `exit`가 원인이었다([운영 runbook](infra/lab-operations.md) known issues)
 
 ## v1.1
 

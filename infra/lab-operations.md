@@ -231,4 +231,5 @@ ADR 022(공격 대상과 웹 터미널 연결)의 확인 작업이다. 개발 VM
 
 | 증상 | 원인 | 조치 |
 |---|---|---|
+| 검증, 파일 API, 재배포 exec가 가끔(빨리 끝나는 스크립트에서 약 90번에 1번) 연결 오류로 끝남. 검증은 `ERROR`, 파일 API는 500. 스크립트는 끝까지 실행됨 | 백엔드가 스크립트 끝에 `exit`를 붙여, sh가 stdin 닫기 frame을 받기 전에 끝남. API server가 읽지 않은 데이터가 남은 연결을 닫으며 RST를 보내고, 받는 쪽은 아직 읽지 않은 stdout과 exit code를 버림(hackforge-be #60) | `exit`를 빼고 stdin EOF로 sh를 끝냄(hackforge-be #75). stdin 닫기는 exec 프로토콜 v5에서만 Pod까지 가므로 클러스터는 Kubernetes 1.30 이상이어야 함. v4로 붙으면 모든 스크립트가 timeout으로 끝남 |
 | Pod 안 compose container가 서비스 이름(`db`)으로 접속하지 못함. IP로는 됨 | inner docker가 Pod의 `/etc/resolv.conf`(`search lab-<ID>.svc.cluster.local ...`, `ndots:5`)를 container에 물려줌. `db`를 `db.lab-<ID>.svc.cluster.local`부터 찾고, 그 질의를 클러스터 DNS로 보내다 GlobalNetworkPolicy에 막혀 timeout | Pod spec에 `dnsPolicy: None`, `dnsConfig: {nameservers: [127.0.0.1]}`(ADR 013, hackforge-be에서 반영). `check.yaml`로 확인: `web`에서 `db`로 이름 접속 성공, 인터넷은 계속 막힘 |
