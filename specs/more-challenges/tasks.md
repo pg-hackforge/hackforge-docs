@@ -29,5 +29,5 @@ v1에 문제 2·3을 더하고, 앞으로 만들 문제를 목록에 "(예정)"�
 - [x] 4. [challenge] template과 `sqli-login`의 `register.sh`: 공개로 바꾸고 처음 공개할 때 `published_at` (확인: 개발 DB에서 예정 → 공개, 다시 등록해도 `published_at` 유지)
 - [x] 5. [fe] 목록·상세의 "(예정)"과 "준비 중이에요", 홈 추천과 내 기록 분석 추천에서 예정 문제 제외, mock에 예정 문제 (테스트: 단위 테스트, mock과 개발 백엔드 캡처)
 - [x] 6. [challenge] `idor-memo`: Node.js 24 + Express, 내장 SQLite, 메모 보기 화면과 API 두 경로의 IDOR, 공유 메모 함정, 힌트, 해답 (확인: `check.sh`, 원본에서 공격 통함, 해답 적용 뒤 막힘과 정상 기능)
-- [ ] 7. [challenge] `cmdi-ping`: Python 3.13 + Flask, 셸 문자열로 ping 실행, `;`·`&`만 막는 필터 함정, 힌트, 해답 (확인: 작업 6과 같음)
+- [x] 7. [challenge] `cmdi-ping`: Python 3.13 + Flask, 셸 문자열로 ping 실행, `;`·`&`만 막는 필터 함정, 힌트, 해답 (확인: 작업 6과 같음)
 - [ ] 8. [docs] 개발 VM 등록과 측정(준비 시간, 메모리, 디스크, 검증 스크립트 결과)을 운영 runbook에 (확인: 백엔드 API로 실제 세션)
